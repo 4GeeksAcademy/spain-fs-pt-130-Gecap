@@ -1,8 +1,9 @@
-![Logo del Proyecto](/src/front/assets/img/gecap_navbar_clean.png)
-<img src="URL_DE_TU_IMAGEN.png" alt="Descripción" width="300">
+<img src="src/front/assets/img/gecap_navbar_clean.png" width="300" alt="Logo GECAP">
 
-# 🏥 GECAP  
-**Gestión Clínica Avanzada y Predictiva**
+
+**Tu centro bajo control**
+
+**Gestión clínica avanzada y predictiva**
 
 GECAP es una plataforma digital inteligente diseñada para optimizar la gestión de agendas y las operaciones diarias en centros de salud.
 
@@ -35,7 +36,7 @@ GECAP está especialmente diseñado para centros de atención primaria, ofrecien
 
 ---
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 ### Frontend
 React.js, Bootstrap  

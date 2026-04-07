@@ -1,7 +1,7 @@
-![Logo del Proyecto](/src/front/assets/img/gecap_navbar_clean.png)
-<img src="URL_DE_TU_IMAGEN.png" alt="Descripción" width="300">
+<img src="src/front/assets/img/gecap_navbar_clean.png" width="300" alt="Logo GECAP">
 
-# GECAP  
+**Your center under control**
+
 **Advanced and Predictive Clinical Management**
 
 GECAP is a smart digital platform designed to optimize appointment scheduling and daily operations at healthcare facilities.
@@ -16,7 +16,7 @@ GECAP is specifically designed for primary care centers, offering a simple, effi
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 **Smart Alerts**  
   Automatic notifications for clinical staff.
