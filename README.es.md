@@ -1,38 +1,56 @@
-# GECAP Salud 
- **Tu centro bajo control**
-
-GECAP es una plataforma digital inteligente diseñada para optimizar la gestión de agendas y las operaciones diarias en centros de salud. Mas que un calendario es una herramienta integral que permite optimizar el tiempo, sin esfuerzo administrativo adicional.
-
-Nuestro sistema incorpora alertas automatizadas y recordatorios inteligentes, predicción de ausencias y ademas permite a los pacientes acceder a su historia clinica, descargar justificantes y mantenerse conectados con sus centro de salud y/o profesionales.
-
-Hemos incorporado dictado de voz para el registro clínico, buscando reducir los tiempos operaticos y mejorar las medidas de bioseguridad, facilitando asi el trabajo del personal sanitario.
-
-GECAP está pensado especialmente para centros de atención primaria, brindando una solución sencilla, eficiente y accesible que mejora la gestión interna y la experiencia del paciente.
+<img src="src/front/assets/img/gecap_navbar_clean.png" width="300" alt="Logo GECAP">
 
 
+**Tu centro bajo control**
+
+**Gestión clínica avanzada y predictiva**
+
+GECAP es una plataforma digital inteligente diseñada para optimizar la gestión de agendas y las operaciones diarias en centros de salud.
+
+Más que un simple calendario, GECAP es una herramienta integral que permite mejorar la eficiencia del tiempo sin generar carga administrativa adicional.
+
+El sistema incorpora alertas automatizadas, recordatorios inteligentes y modelos de predicción de ausencias. Además, permite a los pacientes acceder a su historia clínica, descargar justificantes y mantenerse conectados con su centro de salud y/o profesionales.
+
+También incluye funcionalidades de dictado por voz para el registro clínico, reduciendo tiempos operativos y mejorando las medidas de bioseguridad al minimizar el contacto con dispositivos.
+
+GECAP está especialmente diseñado para centros de atención primaria, ofreciendo una solución sencilla, eficiente y accesible que mejora tanto la gestión interna como la experiencia del paciente.
+
+---
 
 ## Características Principales
-**Alertas inteligentes:** Notificaciones automaticas para el personal clinico.
- **Predicción de Ausencias:** Algoritmos inteligentes para optimizar el tiempo y maximizar la rentabilidad en los centros de salud.
- **Dictado por Voz:** Registro rápido de evoluciones e historias clínicas mediante reconocimiento de voz, que nos permite ademas reducir riesgos de contaminación de equipos.
- **Gestión de Agendas:** Control total de gabinetes, boxes y horarios de especialistas.
- **Panel de Control:** Visualización en tiempo real del estado de la clínica
 
-## Tecnologías a utilizar
-*   **Frontend:** React.js, Bootstrap 
-*   **Backend:**  Python, (FastAPI, Flask) JWT
-*   **Base de Datos:** SQL / SQL Alchemy
-*   **IA/Voz:** []
+**Alertas inteligentes**  
+  Notificaciones automáticas para el personal clínico.
 
+ **Predicción de ausencias**  
+  Algoritmos inteligentes que optimizan la agenda y maximizan la rentabilidad.
 
+**Dictado por voz**  
+  Registro rápido de evoluciones e historias clínicas mediante reconocimiento de voz, reduciendo riesgos de contaminación de equipos.
 
+**Gestión de agendas**  
+  Control total de gabinetes, boxes y horarios de especialistas.
 
+**Panel de control**  
+  Visualización en tiempo real del estado operativo de la clínica.
 
+---
 
+## Tecnologías
 
+### Frontend
+React.js, Bootstrap  
 
+### Backend
+Python, FastAPI / Flask, JWT (autenticación)
 
+### Base de Datos
+SQL, SQLAlchemy  
 
+### IA / Voz
 
+---
 
+## Objetivo
 
+Optimizar la gestión clínica mediante automatización, inteligencia artificial y herramientas digitales que reduzcan la carga operativa y mejoren la calidad del servicio.
