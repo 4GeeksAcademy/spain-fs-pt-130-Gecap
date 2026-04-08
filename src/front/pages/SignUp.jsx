@@ -1,6 +1,7 @@
 import { useState } from "react";  /*Herramienta de React para guardar datos*/
 import "./SignUp.css";
 import logo from "../assets/img/gecap_navbar_clean.png";
+import { Link } from "react-router-dom";
 
 function SignUp() {
 
@@ -44,7 +45,7 @@ function SignUp() {
                 </form>
 
                 <div className="signup-links">
-                    <a href="#">¿Ya tienes una cuenta? Inicia sesión</a>
+                     <Link to="/login">¿Ya tienes una cuenta? Inicia sesión</Link>
                 </div>
             </div>
         </div>
