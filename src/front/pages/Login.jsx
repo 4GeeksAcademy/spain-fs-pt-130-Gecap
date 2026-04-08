@@ -1,6 +1,7 @@
 import React from "react";
 import icon from "../assets/img/gecap_navbar_clean.png";
 import "./login.css"
+import { Link } from "react-router-dom";
 
 export default function Login() {
 
@@ -49,9 +50,9 @@ export default function Login() {
             <a href="#" className="small text-decoration-none">
               ¿Olvidaste tu contraseña?
             </a>
-            <a href="#" className="small text-decoration-none">
+            <Link to="/signup" className="small text-decoration-none">
               Registrar una cuenta
-            </a>
+            </Link>
           </div>
 
         </form>
