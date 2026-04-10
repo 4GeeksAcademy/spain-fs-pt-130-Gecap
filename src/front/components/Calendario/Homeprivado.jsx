@@ -20,7 +20,6 @@ function Homeprivado() {
                 <span className="badge mt-2" style={{ backgroundColor: "#93bbbf" }}>Profesional Activo</span>
             </div>
             <div>
-                Hola Soy Belkis y me gustan los perros, de 4 de 2 y sin patas!!
                 <Calendario />
             </div>
         </div> 
