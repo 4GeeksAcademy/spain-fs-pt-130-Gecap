@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import { AgendaMedica } from "./components/AgendaMedica";
 import { FichaPaciente } from "./components/FichaPaciente";
 import SignUp from "./pages/SignUp";
+import Homeprivado from "./components/Calendario/Homeprivado.jsx";
 import { Estadisticas } from "./components/Estadisticas";
 
 export const router = createBrowserRouter(
@@ -32,6 +33,7 @@ export const router = createBrowserRouter(
         <Route path="/healthform" element={<Healthform />} />
         <Route element={<FichaPaciente />} path="/paciente" />
         <Route element={<AgendaMedica />} path="/agenda" />
+        <Route element={<Homeprivado/>} path="/homeprivado"/>
         <Route element={<Estadisticas />} path="/estadisticas" />
       </Route>
     </>
