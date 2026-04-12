@@ -103,8 +103,8 @@ export default function Healthform() {
     }
 
     const datosAFicha = {
-        ...formData,
-        imc_ideal: infoIMC.ideal 
+      ...formData,
+      imc_ideal: infoIMC.ideal
     };
 
     // Si todo está ok, guardamos
@@ -146,7 +146,7 @@ export default function Healthform() {
       return { valor: imc, label: "Obesidad", color: "#dc3545", ideal: rangoNormal };
     }
     return { valor: "--", label: "Faltan datos", color: "#6c757d", ideal: "--" };
-};
+  };
 
   const infoIMC = getInfoIMC();
 
@@ -196,7 +196,6 @@ export default function Healthform() {
         { q: "¿Padece o ha pasado Cáncer?", name: "cancer", textarea: true },
         { q: "¿Ha recibido Radiación?", name: "radiacion", textarea: true },
         { q: "¿Fuma o ingiere alcohol?", name: "habitos" },
-        { q: "¿Es usted alérgico?", name: "alergia", textarea: true },
       ]
     },
     {
