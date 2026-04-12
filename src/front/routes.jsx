@@ -13,6 +13,7 @@ import { AgendaMedica } from "./components/AgendaMedica";
 import { FichaPaciente } from "./components/FichaPaciente";
 import SignUp from "./pages/SignUp";
 import Homeprivado from "./components/Calendario/Homeprivado.jsx";
+import { Estadisticas } from "./components/Estadisticas";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,11 +29,12 @@ export const router = createBrowserRouter(
       <Route path="/signup" element={<SignUp />} />
 
       <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-        <Route path="/" element={<Home />} />
+        <Route element={<Home />} path="" /> 
         <Route path="/healthform" element={<Healthform />} />
         <Route element={<FichaPaciente />} path="/paciente" />
         <Route element={<AgendaMedica />} path="/agenda" />
         <Route element={<Homeprivado/>} path="/homeprivado"/>
+        <Route element={<Estadisticas />} path="/estadisticas" />
       </Route>
     </>
   )
