@@ -1,5 +1,5 @@
 import React from 'react';
-import Calendario from './MiCalendario/Calendario';
+import Calendario from "./Calendario"
 
 function Homeprivado() {
     const profesional = {
@@ -7,7 +7,7 @@ function Homeprivado() {
     };
 
     return (
-        <div>
+        <div className=''>
             <div className="d-flex justify-content-between align-items-center mb-4 p-3 rounded shadow-sm bg-white border-start border-5">
                 <div className='d-flex'>
                     <h2 className="text-secondary" style={{ color: "#b4d2d9", fontSize: "1em" }}>

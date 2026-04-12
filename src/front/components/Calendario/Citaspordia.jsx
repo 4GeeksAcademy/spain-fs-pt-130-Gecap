@@ -1,39 +1,68 @@
 import React, { useState, useEffect } from "react";
 import { DayPilot, DayPilotCalendar } from "@daypilot/daypilot-lite-react";
 
-const Scheduler = ({ fechaSeleccionada }) => {
-    const [calendar, setCalendar] = useState(null);
 
-    const [config, setConfig] = useState({
+const Scheduler = ({ fechaSeleccionada }) => {
+
+    const [calendar, setCalendar] = useState(null);
+    const [misCitas, setMisCitas] = useState([]);
+
+    useEffect(() => {
+        if (!calendar || calendar.disposed())
+            return;
+
+        calendar.update({
+            startDate: new DayPilot.Date(fechaSeleccionada),
+            events: misCitas,
+
+        });
+    }, [calendar, fechaSeleccionada, misCitas]);
+
+    const config = {
         viewType: "Day",
         headerDateFormat: "dd/MM/yyyy",
-        startDate: DayPilot.Date.today(),
-        columns: [{ name: "Citas Médicas", id: "C1" }],
+        columns: [{ name: "Agenda Médica", id: "C1" }],
+        dayBeginsHour: 10,
+        dayEndsHour: 21,
+        businessBeginsHour: 10,
+        businessEndsHour: 21,
+        heightSpec: "BusinessHoursNoScroll",
         headerHeight: 40,
         cellHeight: 30,
         theme: "calendar_default",
-    });
+        durationBarVisible: false,
 
-    useEffect(() => {
-        if (calendar && fechaSeleccionada) {
-            try {
-                const nuevaFecha = new DayPilot.Date(fechaSeleccionada);
-                calendar.update({
-                    startDate: nuevaFecha
-                });
-            } catch (e) {
-                console.warn("Error al actualizar calendario:", e);
-            }
+
+        onTimeRangeSelected: async (args) => {
+            const modal = await DayPilot.Modal.prompt("Nueva cita", "Nombre y apellido");
+            calendar.clearSelection();
+            if (modal.canceled || !modal.result) return;
+
+            const nuevaCita = {
+                id: DayPilot.guid(),
+                text: modal.result,
+                start: args.start,
+                end: args.end,
+            };
+            setMisCitas(prev => [...prev, nuevaCita]);
+        },
+        
+        onBeforeEventRender: args => {
+            if (!args.data.backColor) {
+                args.data.backColor = "#93c47d";
+            } args.data.borderColor = "darker";
+            args.data.fontColor = "white";
         }
-    }, [calendar, fechaSeleccionada]);
+        
+    }
+
+
 
     return (
-        <div className="mt-3 border rounded shadow-sm overflow-hidden" style={{ height: "400px" }}>
-            <DayPilotCalendar 
-                {...config} 
-                controlRef={setCalendar} 
-            />
+        <div className="mt-3 border rounded shadow-sm overflow-hidden">
+            <DayPilotCalendar {...config} controlRef={setCalendar} />
         </div>
+
     );
 };
 

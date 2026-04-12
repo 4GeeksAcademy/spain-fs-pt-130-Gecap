@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import Scheduler from './Citaspordia';
+import "../Calendario/Calendario.css"
 
 function Calendario() {
     const [startDate, setStartDate] = useState(new Date());
@@ -25,7 +26,7 @@ function Calendario() {
                         <hr />
                         <div className="mt-2">
                           
-                            <p className="text-secondary">CITAS DE HOY.</p>
+                            <p className="text-secondary">CITAS DE HOY</p>
                             <Scheduler fechaSeleccionada={startDate} />
                             <textarea 
                                 className="form-control border-0 bg-light" 
@@ -41,25 +42,6 @@ function Calendario() {
                     <DatePicker selected={startDate} onChange={manejarSeleccionDia} inline locale={es} outsideClickIgnoreClass="react-datepicker__day--outside-month"/>
                 </div>
             </div>
-
-            <style>{`
-                .react-datepicker__day--outside-month {
-                    visibility: hidden !important;
-                    pointer-events: none;
-                }
-                .react-datepicker {
-                    border: none !important;
-                    font-family: inherit;
-                }
-                .react-datepicker__header {
-                    background-color: white !important;
-                    border-bottom: 1px solid #f0f0f0 !important;
-                }
-                .react-datepicker__day--selected {
-                    background-color: #93bbbf !important;
-                    border-radius: 50% !important;
-                }
-            `}</style>
         </div>
     );
 }
