@@ -1,5 +1,6 @@
 import React from 'react';
 import Calendario from './MiCalendario/Calendario';
+import DoctorScheduleBar from "../components/DoctorScheduleBar/DoctorScheduleBar";
 
 function Homeprivado() {
     const profesional = {
@@ -21,6 +22,13 @@ function Homeprivado() {
             </div>
             <div>
                 <Calendario />
+            </div>
+            <div>
+
+                <DoctorScheduleBar />
+
+                <h2>Panel de control</h2>
+
             </div>
         </div> 
     );
