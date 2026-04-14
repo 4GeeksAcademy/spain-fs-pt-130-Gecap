@@ -3,22 +3,22 @@ import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { useLocation } from "react-router-dom";
 
 export const AgendaMedica = () => {
-    // Usamos tu hook personalizado en lugar de useContext(Context)
+  
     const { store, dispatch } = useGlobalReducer();
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [slotSeleccionado, setSlotSeleccionado] = useState(null);
+    const location = useLocation();
+    const pacienteDeFicha = location.state?.nombre;
 
-
-    // Ahora store ya no será null porque el hook gestiona el acceso
     const user = store?.user || { nombre: "Invitado", role: "paciente" };
     const esMedico = user.role === "medico";
 
     const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date().toISOString().split('T')[0]);
 
-    // 2. Simulación de datos (Esto vendrá de tu base de datos propia)
     const [citas, setCitas] = useState([
         { id: 1, hora: "09:00", disponible: true },
         { id: 2, hora: "09:15", disponible: false, paciente: "Juan Pérez", motivo: "Limpieza" },
@@ -79,7 +79,6 @@ export const AgendaMedica = () => {
                                         const month = String(date.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
                                         const day = String(date.getDate()).padStart(2, '0');
 
-                                        // Unimos en formato YYYY-MM-DD sin pasar por ISO
                                         const fechaLocal = `${year}-${month}-${day}`;
 
                                         setFechaSeleccionada(fechaLocal);
@@ -141,6 +140,7 @@ export const AgendaMedica = () => {
                                         className={`d-flex align-items-center justify-content-between p-3 rounded-4 border-start border-5 shadow-sm 
                                         ${cita.disponible ? 'border-success bg-light' : 'border-danger bg-danger bg-opacity-10'}`}>
 
+
                                         <div className="d-flex align-items-center">
                                             <div className="fw-bold h5 mb-0 me-4 text-dark" style={{ minWidth: "70px" }}>{cita.hora}</div>
                                             <div>
@@ -181,33 +181,58 @@ export const AgendaMedica = () => {
                                 ))}
                             </div>
                         </div>
-                    </div> {/* Fin col-lg-8 */}
-                </div> {/* Fin Row */}
-            </div> {/* Fin Container */}
+                    </div> 
+                </div> 
+            </div> 
 
-            {/* MODAL DE CONFIRMACIÓN (Dentro de la última etiqueta div del componente) */}
+            {/* MODAL DE CONFIRMACIÓN */}
             {showModal && (
                 <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 2000 }}>
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content border-0 rounded-4 shadow">
                             <div className="modal-header border-0 p-4 pb-0">
-                                <h5 className="fw-bold mb-0" style={{ color: "#566873" }}>Confirmar Cita</h5>
+                                <h5 className="fw-bold mb-0" style={{ color: "#566873" }}>
+                                    {esMedico ? "Agendar Cita Médica" : "Confirmar mi Cita"}
+                                </h5>
                                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
                             </div>
                             <div className="modal-body p-4">
-                                <p className="text-muted">Estás reservando para el día <strong>{new Date(fechaSeleccionada).toLocaleDateString()}</strong> a las <strong>{slotSeleccionado?.hora}</strong>.</p>
+                              
+                                <div className="mb-3 p-3 rounded-3" style={{ backgroundColor: "#ebf2f1" }}>
+                                    <p className="text-muted small mb-1 text-uppercase fw-bold">Paciente:</p>
+                                    <h5 className="fw-bold mb-0" style={{ color: "#5e888c" }}>
+                                        {esMedico ? (pacienteDeFicha || "Seleccionar Paciente...") : `${user.nombre} ${user.apellidos}`}
+                                    </h5>
+                                </div>
+
+                                <p className="text-muted small">
+                                    Reserva para el día <strong>{new Date(fechaSeleccionada).toLocaleDateString()}</strong> a las <strong>{slotSeleccionado?.hora}</strong>.
+                                </p>
+
                                 <label className="small fw-bold text-secondary mb-2">Motivo de la consulta</label>
-                                <select className="form-select border-0 bg-light mb-3">
+                                <select className="form-select border-0 bg-light mb-3 shadow-sm">
                                     <option>Revisión General</option>
                                     <option>Primera Consulta</option>
                                     <option>Urgencia</option>
                                     <option>Tratamiento Específico</option>
                                 </select>
-                                <textarea className="form-control border-0 bg-light" placeholder="Añade algún detalle..." rows="3"></textarea>
+
+                                <textarea className="form-control border-0 bg-light shadow-sm" placeholder="Añade algún detalle importante..." rows="3"></textarea>
                             </div>
                             <div className="modal-footer border-0 p-4 pt-0">
                                 <button className="btn btn-light px-4" style={{ borderRadius: "10px" }} onClick={() => setShowModal(false)}>Cancelar</button>
-                                <button className="btn px-4 text-white" style={{ backgroundColor: "#e8888c", borderRadius: "10px" }} onClick={() => setShowModal(false)}>Confirmar Reserva</button>
+                                <button
+                                    className="btn px-4 text-white shadow-sm"
+                                    style={{ backgroundColor: "#e8888c", borderRadius: "10px" }}
+                                    onClick={() => {
+                                        alert(esMedico ? `Cita confirmada para ${pacienteDeFicha}` : "Cita solicitada correctamente");
+                                        setShowModal(false);
+                                       
+                                        if (esMedico && pacienteDeFicha) navigate(-1);
+                                    }}
+                                >
+                                    {esMedico ? "Confirmar y Finalizar" : "Confirmar Reserva"}
+                                </button>
                             </div>
                         </div>
                     </div>
