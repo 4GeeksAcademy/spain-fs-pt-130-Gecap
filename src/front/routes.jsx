@@ -13,7 +13,7 @@ import { AgendaMedica } from "./components/AgendaMedica";
 import { FichaPaciente } from "./components/FichaPaciente";
 import SignUp from "./pages/SignUp";
 import { Estadisticas } from "./components/Estadisticas";
-import AreaPersonal from "./components/Calendario/Homeprivado.jsx";
+import AreaPersonal from "./components/AreaPersonal.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(

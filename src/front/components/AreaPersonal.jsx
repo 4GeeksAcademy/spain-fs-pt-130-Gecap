@@ -1,11 +1,28 @@
 import React from 'react';
-import Calendario from "./Calendario";
+import Calendario from "./Calendario/Calendario";
 import { useState } from 'react';
+import { useEffect } from 'react';
 
 function AreaPersonal() {
 
     const [pacientesHoy, setPacientesHoy] = useState([]);
     const profesional = { nombre: "Juan Pérez" };
+
+    useEffect(()=>{
+        fetch('http://127.0.0.1:3001/api/appointments')
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            setPacientesHoy(data);
+        })
+        .catch((error) => console.error("Error:", error));
+    },[] );
+
+
+
+
+
+
     const stats = {
         totalPacientes: pacientesHoy.length,
     };
@@ -31,37 +48,7 @@ function AreaPersonal() {
                                     : `Tienes ${stats.totalPacientes} paciente${stats.totalPacientes > 1 ? "s" : ""} hoy`}
                             </span>
                         </div>
-                        <div>
-                            <div className="d-flex gap-2 justify-content-end">
-                                <div
-                                    className="d-flex justify-content-center align-items-center"
-                                    style={{
-                                        width: "45px",
-                                        height: "45px",
-                                        backgroundColor: "#f8f9fa",
-                                        borderRadius: "12px",
-                                        border: "1px solid #e0e0e0",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    <i className="fas fa-envelope"></i>
-                                </div>
 
-                                <div
-                                    className="d-flex justify-content-center align-items-center"
-                                    style={{
-                                        width: "45px",
-                                        height: "45px",
-                                        backgroundColor: "#f8f9fa",
-                                        borderRadius: "12px",
-                                        border: "1px solid #e0e0e0",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    <i className="fas fa-bell"></i>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
