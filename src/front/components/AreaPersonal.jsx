@@ -1,10 +1,9 @@
 import React from 'react';
 import Calendario from "./Calendario/Calendario";
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import DoctorScheduleBar from "./DoctorScheduleBar/DoctorScheduleBar";
 
 function AreaPersonal() {
-
     const [pacientesHoy, setPacientesHoy] = useState([]);
     const profesional = { nombre: "Juan Pérez" };
 
@@ -18,11 +17,6 @@ function AreaPersonal() {
         .catch((error) => console.error("Error:", error));
     },[] );
 
-
-
-
-
-
     const stats = {
         totalPacientes: pacientesHoy.length,
     };
@@ -32,7 +26,11 @@ function AreaPersonal() {
     return (
         <div className="container-fluid p-4" style={{ minHeight: "100vh" }}>
 
-            <div className="row mb-4 g-3">
+            <div className="mb-4">
+                <DoctorScheduleBar appointments={pacientesHoy} />
+            </div>
+
+             <div className="row mb-4 g-3">
                 <div className="col-lg-12">
                     <div className="card border-0 shadow-sm p-4 h-100 " style={{ borderRadius: "20px", borderLeft: "8px solid #93bbbf" }}>
                         <h2 className="text-secondary mb-1" style={{ fontSize: "2em" }}>Bienvenido,{" "}

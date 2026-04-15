@@ -53,14 +53,6 @@ function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
                                 onEliminarPaciente={onEliminarPaciente}
                             />
 
-                            <button
-                                className="btn btn-sm mt-3 text-white"
-                                style={{ backgroundColor: "#93bbbf" }}
-                                onClick={agregarCita}
-                            >
-                                Agregar cita de prueba
-                            </button>
-
                             <textarea
                                 className="form-control border-0 bg-light"
                                 rows="2"
