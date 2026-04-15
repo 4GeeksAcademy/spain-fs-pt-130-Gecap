@@ -596,7 +596,6 @@ export default function Healthform() {
                     q={p.q}
                     name={p.name}
                     hasText={p.textarea}
-                    // 👇 Añade esta línea para pasar el valor actual
                     value={formData[p.name]}
                     onChange={handleInputChange}
                     accentColor={sec.color}
