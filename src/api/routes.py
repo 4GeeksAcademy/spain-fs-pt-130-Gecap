@@ -48,10 +48,10 @@ def signup():
         db.session.add(new_user)
         db.session.flush()
 
-        if role == "medico":
+        if role == "medico":            
             new_profile = Doctor(doctor_name=nombre, user_id=new_user.id)
         else:
-            new_profile = Patient(patient_name=nombre, user_id=new_user.id)
+            new_profile = Patient(nombre=nombre, user_id=new_user.id)
 
         db.session.add(new_profile)
         db.session.commit()
