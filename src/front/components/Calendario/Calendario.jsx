@@ -6,24 +6,12 @@ import CitasPorDia from './Citaspordia';
 import "../Calendario/Calendario.css";
 
 
-function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
+function Calendario({ createAppointment, onEliminarPaciente, events}) {
 
     const [startDate, setStartDate] = useState(new Date());
 
     const manejarSeleccionDia = (date) => {
         setStartDate(date);
-    };
-
-    const agregarCita = () => {
-
-        const nuevaCita = {
-            id: Date.now(),
-            hora: "23:00",
-            nombre: "Carlos López",
-            motivo: "Control"
-        };
-
-        onAgregarPaciente(nuevaCita);
     };
 
     return (
@@ -48,9 +36,10 @@ function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
                             <p className="text-secondary">CITAS</p>
 
                             <CitasPorDia
-                                fechaSeleccionada={startDate}
-                                onAgregarPaciente={onAgregarPaciente}
+                                fechaSeleccionada={startDate.toISOString().split('T')[0]} 
+                                createAppointment={createAppointment}
                                 onEliminarPaciente={onEliminarPaciente}
+                                events={events}
                             />
 
                             <textarea
@@ -65,6 +54,7 @@ function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
 
                 <div className='contenedor-calendario shadow-sm bg-white p-2 rounded'>
                     <DatePicker
+                        events={events}
                         selected={startDate}
                         onChange={manejarSeleccionDia}
                         inline
