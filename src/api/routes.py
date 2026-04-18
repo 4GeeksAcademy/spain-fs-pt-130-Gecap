@@ -15,45 +15,6 @@ api = Blueprint('api', __name__)
 
 CORS(api, resources={r"/*": {"origins": "*"}})
 
-@api.route('/appointments', methods=['POST'])
-@jwt_required()
-def create_appointment():
-    data = request.get_json()
-    user_id = get_jwt_identity() 
-   
-    doctor = Doctor.query.filter_by(user_id=user_id).first()
-    
-    if not doctor:
-        return jsonify({"msg": "Perfil de médico no encontrado"}), 404
-
-    try:
-        new_app = Appointment(
-            patient_id=data.get("patient_id"),
-            doctor_id=doctor.doctor_id, 
-            date=data.get("date"),
-            time=data.get("time"),
-            reason=data.get("reason"),
-            status="pendiente"
-        )
-        db.session.add(new_app)
-        db.session.commit()
-        return jsonify({"msg": "Cita agendada correctamente", "appointment": new_app.serialize()}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"msg": "Error al crear la cita", "error": str(e)}), 500
-
-@api.route('/appointments', methods=['GET'])
-@jwt_required()
-def get_my_appointments():
-    user_id = get_jwt_identity() 
-    doctor = Doctor.query.filter_by(user_id=user_id).first()
-    
-    if not doctor:
-        return jsonify({"msg": "Médico no encontrado"}), 404
-
-    appointments = Appointment.query.filter_by(doctor_id=doctor.doctor_id).all()
-    return jsonify([a.serialize() for a in appointments]), 200
-
 
 @api.route('/signup', methods=['POST'])
 def signup():
@@ -62,7 +23,7 @@ def signup():
     password = data.get("password")
     nombre = data.get("nombre")
     role = data.get("role")
-    
+
     user_exists = User.query.filter_by(email=email).first()
     if user_exists:
         return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
@@ -75,7 +36,7 @@ def signup():
         db.session.add(new_user)
         db.session.flush()
 
-        if role == "medico":            
+        if role == "medico":
             new_profile = Doctor(doctor_name=nombre, user_id=new_user.id)
         else:
             new_profile = Patient(nombre=nombre, user_id=new_user.id)
@@ -86,8 +47,8 @@ def signup():
         return jsonify({"msg": f"Registro de {role} exitoso"}), 201
 
     except Exception as e:
-        db.session.rollback()       
-        print(f"Error en el registro: {str(e)}") 
+        db.session.rollback()
+        print(f"Error en el registro: {str(e)}")
         return jsonify({"msg": "Error al procesar el registro", "error": str(e)}), 500
 
 
@@ -114,7 +75,8 @@ def login():
             user_data = perfil.serialize() if perfil else {
                 "patient_name": "Paciente"}
 
-        access_token = create_access_token(identity=str(user_identity.id), additional_claims={"role": role})
+        access_token = create_access_token(identity=str(
+            user_identity.id), additional_claims={"role": role})
 
         return jsonify({
             "token": access_token,
@@ -123,6 +85,7 @@ def login():
         }), 200
 
     return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+
 
 @api.route('/perfil', methods=['GET'])
 @jwt_required()
@@ -139,6 +102,7 @@ def get_user_profile():
 
     return jsonify({"msg": f"Hola {current_user_email}, tu rol es {role}"}), 200
 
+
 @api.route('/pacientes', methods=['GET'])
 @jwt_required()
 def get_pacientes():
@@ -146,6 +110,8 @@ def get_pacientes():
     return jsonify([p.serialize() for p in pacientes]), 200
 
 # CREAR PACIENTE
+
+
 @api.route('/pacientes', methods=['POST'])
 @jwt_required()
 def create_patient():
@@ -153,14 +119,16 @@ def create_patient():
     existing_patient = Patient.query.filter_by(dni=data.get("dni")).first()
     if existing_patient:
         return jsonify({"msg": "El DNI introducido ya pertenece a un paciente registrado"}), 400
-    
+
     try:
 
         def clean_num(val):
             if val is None or str(val).strip() == "" or str(val) == "--":
                 return None
-            try: return float(val)
-            except: return None
+            try:
+                return float(val)
+            except:
+                return None
 
         nuevo_p = Patient(
             nombre=data.get("nombre"),
@@ -168,13 +136,14 @@ def create_patient():
             dni=data.get("dni"),
             email=data.get("email"),
             telefono=data.get("telefono"),
-            nacimiento=data.get("nacimiento") if data.get("nacimiento") else None,           
+            nacimiento=data.get("nacimiento") if data.get(
+                "nacimiento") else None,
             peso=clean_num(data.get("peso")),
             altura=clean_num(data.get("altura")),
             glucosa=clean_num(data.get("glucosa")),
             spo2=clean_num(data.get("spo2")),
             tension=data.get("tension") or "",
-            grupo_sanguineo=data.get("grupoSanguineo") or "",          
+            grupo_sanguineo=data.get("grupoSanguineo") or "",
             embarazo=data.get("embarazo", "NO"),
             hepatitis=data.get("hepatitis", "NO"),
             tuberculosis=data.get("tuberculosis", "NO"),
@@ -198,28 +167,33 @@ def create_patient():
         return jsonify({"msg": "Error al crear", "error": str(e)}), 500
 
 # ACTUALIZAR PACIENTE (PUT)
+
+
 @api.route('/pacientes/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_patient(id):
     paciente = Patient.query.get(id)
-    if not paciente: return jsonify({"msg": "No encontrado"}), 404
-    
-    data = request.get_json()   
+    if not paciente:
+        return jsonify({"msg": "No encontrado"}), 404
+
+    data = request.get_json()
     for key, value in data.items():
         if hasattr(paciente, key):
             setattr(paciente, key, value)
-    
+
     db.session.commit()
     return jsonify({"msg": "Paciente actualizado"}), 200
 
 # BORRAR PACIENTE (DELETE)
+
+
 @api.route('/pacientes/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_patient(id):
     paciente = Patient.query.get(id)
     if not paciente:
         return jsonify({"msg": "Paciente no encontrado"}), 404
-    
+
     try:
         db.session.delete(paciente)
         db.session.commit()
@@ -227,3 +201,47 @@ def delete_patient(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"msg": "Error al eliminar", "error": str(e)}), 500
+    
+
+
+# Endpoints para las citas 
+@api.route('/appointments', methods=['GET'])
+def get_all_appointment():
+    result_all_appointment = db.session.execute(
+        select(Appointment)).scalars().all()
+    return jsonify([appointment.serialize() for appointment in result_all_appointment]), 200
+
+
+@api.route('/appointment/<int:appointment_id>', methods=['GET'])
+def get_appointment(appointment_id):
+    appointment = db.session.get(Appointment, appointment_id)
+    if appointment is None:
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    return jsonify(appointment.serialize()), 200
+
+
+@api.route('/appointment', methods=['POST'])
+def add_appointment():
+    data = request.get_json()
+    patient = db.session.execute(select(Patient).where(
+        Patient.patient_name == "patient_name"))
+
+    if not patient:
+        patient = Patient(patient_name=data["patient_name"])
+        db.session.add(patient)
+        db.session.commit()
+
+    new_appointment = Appointment(
+        patient_id=patient.patient_id,
+        user_id=data["user_id"],
+        date=datetime.fromisoformat(data["date"]),
+        status=data["status"]
+    )
+
+    db.session.add(new_appointment)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Appointment created successfully",
+        "appointment": new_appointment.serialize()
+    }), 201
