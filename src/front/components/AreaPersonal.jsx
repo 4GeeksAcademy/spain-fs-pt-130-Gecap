@@ -33,45 +33,45 @@ function AreaPersonal() {
         setPacientesHoy(prev => prev.filter(p => p.id !== id));
     };
     return (
-        <div className="container-fluid p-4" style={{ minHeight: "100vh" }}>
+        <div className="container-fluid" style={{ minHeight: "100vh" }}>
 
-            <div className="mb-4">
-                <DoctorScheduleBar appointments={pacientesHoy} />
-            </div>
+            <div className="card border-0 shadow-sm" style={{ borderRadius: "15px", overflow: "hidden" }}>
+                <div style={{ height: "6px", backgroundColor: "#93bbbf" }}></div>
 
-            <div className="row mb-4 g-3">
-                <div className="col-lg-12">
-                    <div className="card border-0 shadow-sm p-4 h-100 " style={{ borderRadius: "20px", borderLeft: "8px solid #93bbbf" }}>
-                        <h2 className="text-secondary mb-1" style={{ fontSize: "2em" }}>Bienvenido,{" "}
-                            <span className="fw-bold" style={{ color: "#566873", fontSize: "1.7em" }}>{profesional.nombre}{"!"}</span>
-                        </h2>
-                        <div className="mt-3">
-                            <span className="badge px-3 py-2" style={{ fontSize: "1.2em", backgroundColor: "#93bbbf", borderRadius: "10px" }}>
-                                <i className="fas fa-check-circle me-1"></i> Profesional Activo
-                            </span>
-                            <span className="badge px-3 py-2 mx-4" style={{ fontSize: "1.2em", backgroundColor: "#e8888c", borderRadius: "10px" }}>
-                                <i className="fas fa-check-circle me-1"></i> {stats.totalPacientes === 0
-                                    ? "No tienes pacientes hoy"
-                                    : `Tienes ${stats.totalPacientes} paciente${stats.totalPacientes > 1 ? "s" : ""} hoy`}
+                <div className="card-body py-2 px-1">
+                    <div className="d-flex justify-content-between align-items-center mb-2 mx-3">
+                        <div>
+                            <span className="badge rounded-pill" style={{ fontSize: "0.9rem", backgroundColor: "rgba(147, 187, 191, 0.2)", color: "#566873", border: "1px solid #93bbbf" }}>
+                                <i className="fas fa-circle me-1" style={{ fontSize: "0.9rem" }}></i> Profesional Activo
                             </span>
                         </div>
 
+                        <div className="text-end">
+                            <p className="text-muted mb-0" style={{ fontSize: "1.3rem" }}>
+                                Bienvenido, <span className="fw-bold" style={{ color: "#4a5568" }}>{profesional.nombre}!</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="px-1">
+                        <DoctorScheduleBar appointments={pacientesHoy} />
                     </div>
                 </div>
             </div>
 
             <div className="col-md-12 mt-4">
-                <div className="card border-0 shadow-sm p-3 h-100" style={{ borderRadius: "20px" }}>
-                    <Calendario onAgregarPaciente={(nuevoPaciente) =>
-                        setPacientesHoy(prev => [...prev, nuevoPaciente])
-                    }
-                        onEliminarPaciente={(id) =>
-                            setPacientesHoy(prev => prev.filter(p => p.id !== id))} />
-                    <button className="btn mt-3 fw-bold shadow-sm" style={{ backgroundColor: "#93bbbf", color: "white" }}>
-                        + Nueva Consulta
-                    </button>
+                <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "20px", overflow: "hidden" }}>                  
+                    <div style={{ height: "6px", width: "100%", backgroundColor: "#93bbbf" }}></div>
+                    <div className="card-body p-3">
+                        <Calendario onAgregarPaciente={(nuevoPaciente) =>
+                            setPacientesHoy(prev => [...prev, nuevoPaciente])
+                        }
+                            onEliminarPaciente={(id) =>
+                                setPacientesHoy(prev => prev.filter(p => p.id !== id))} />                     
+                    </div>
                 </div>
             </div>
+
         </div>
     );
 }
