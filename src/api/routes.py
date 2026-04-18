@@ -233,8 +233,9 @@ def add_appointment():
     new_appointment = Appointment(
         patient_id=patient.patient_id,
         user_id=data["user_id"],
-        date=datetime.fromisoformat(data["date"]),
-        status=data["status"]
+        date=data["date"],
+        time=data["time"],
+        status=data["status"],
     )
 
     db.session.add(new_appointment)
