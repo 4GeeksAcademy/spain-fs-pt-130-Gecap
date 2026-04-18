@@ -13,7 +13,7 @@ bcrypt = Bcrypt()
 
 api = Blueprint('api', __name__)
 
-CORS(api, resources={r"/*": {"origins": "*"}})
+CORS(api)
 
 
 @api.route('/signup', methods=['POST'])
@@ -201,10 +201,9 @@ def delete_patient(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"msg": "Error al eliminar", "error": str(e)}), 500
-    
 
 
-# Endpoints para las citas 
+# Endpoints para las citas ojo!!!!!!!!
 @api.route('/appointments', methods=['GET'])
 def get_all_appointment():
     result_all_appointment = db.session.execute(
@@ -245,3 +244,34 @@ def add_appointment():
         "message": "Appointment created successfully",
         "appointment": new_appointment.serialize()
     }), 201
+
+
+@api.route('/appointment/<int:appointment_id>', methods=['PUT'])
+def update_appointment(appointment_id):
+    data = request.get_json()
+    appointment_actualizate = db.session.get(Appointment, appointment_id)
+    if appointment_actualizate is None:
+        return jsonify({"msg": "Cita no encontrada"}), 404
+
+    appointment_actualizate.patient.nombre= data["nombre"],
+    appointment_actualizate.date= data["date"],
+    appointment_actualizate.status=data["status"],
+    appointment_actualizate.time=data["time"],
+    appointment_actualizate.reason=data["reason"],
+
+    db.session.commit()
+
+    return jsonify({"mensaje": f"Usuario {appointment_id} actualizado", "datos": data}), 200
+
+
+@api.route('/appointment/<int:appointment_id>', methods=['DELETE'])
+def delete_appointment(appointment_id):
+
+    appointment_to_delete = db.session.execute(select(Appointment).where(
+        appointment_id == appointment_id)).scalar_one_or_none()
+    if appointment_to_delete is None:
+        return jsonify({"msg": "la cita no existe"}), 404
+
+    db.session.delete(appointment_to_delete)
+    db.session.commit()
+    return jsonify({"msg": "Eliminado con exito"}), 200
