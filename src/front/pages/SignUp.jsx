@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./SignUp.css";
 import logo from "../assets/img/gecap_navbar_clean.png";
 
-export function SignUp() {
+function SignUp() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: "",
@@ -115,3 +115,5 @@ export function SignUp() {
     </div>
 );
 }
+
+export default SignUp;

@@ -1,6 +1,38 @@
 import React from "react";
+import { useState } from "react";
 
 export const Home = () => {
+	const [solicitud, setSolicitud] = useState({
+		nombre: "",
+		telefono: "",
+		motivo: "Control Rutinario"
+	});
+
+	const manejarEnvioCita = async (e) => {
+		e.preventDefault();
+		try {
+			const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/external-appointment`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(solicitud)
+			});
+
+			if (response.ok) {
+				alert("¡Solicitud enviada con éxito! El médico contactará contigo pronto.");
+				setSolicitud({ nombre: "", telefono: "", motivo: "Control Rutinario" });
+
+				const modalElement = document.getElementById('citaRapidaModal');
+				const modal = bootstrap.Modal.getInstance(modalElement);
+				modal.hide();
+			} else {
+				alert("Hubo un error al enviar la solicitud.");
+			}
+		} catch (error) {
+			console.error("Error:", error);
+			alert("No se pudo conectar con el servidor.");
+		}
+	};
+
 	return (
 		<div style={{ backgroundColor: "#ebf2f1", minHeight: "100vh" }}>
 
@@ -123,8 +155,8 @@ export const Home = () => {
 										style={{
 											fontFamily: "'Indie Flower', cursive",
 											color: "var(--gecap-action)",
-											fontSize: "1.4rem", 
-											transform: "rotate(-2deg)" 
+											fontSize: "1.4rem",
+											transform: "rotate(-2deg)"
 										}}>
 										Tu centro bajo control
 									</p>
@@ -170,6 +202,62 @@ export const Home = () => {
 									</div>
 								</div>
 							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div className="modal fade" id="citaRapidaModal" tabIndex="-1" aria-hidden="true">
+				<div className="modal-dialog modal-dialog-centered">
+					<div className="modal-content border-0 shadow-lg" style={{ borderRadius: "20px" }}>
+						<div className="modal-header border-0 pt-4 px-4">
+							<h5 className="fw-bold" style={{ color: "#566873" }}>Solicitar Cita Médica</h5>
+							<button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div className="modal-body p-4">
+							<p className="small text-muted mb-4">Completa tus datos y el profesional se pondrá en contacto contigo para confirmar la hora.</p>
+							<form onSubmit={manejarEnvioCita}>
+								<div className="mb-3">
+									<label className="form-label small fw-bold text-muted">NOMBRE COMPLETO</label>
+									<input
+										type="text"
+										className="form-control bg-light border-0"
+										placeholder="Ej: Ana García"
+										style={{ borderRadius: "10px" }}
+										value={solicitud.nombre}
+										onChange={(e) => setSolicitud({ ...solicitud, nombre: e.target.value })}
+										required
+									/>
+								</div>
+								<div className="mb-3">
+									<label className="form-label small fw-bold text-muted">TELÉFONO DE CONTACTO</label>
+									<input
+										type="tel"
+										className="form-control bg-light border-0"
+										placeholder="Ej: 600 000 000"
+										style={{ borderRadius: "10px" }}
+										value={solicitud.telefono}
+										onChange={(e) => setSolicitud({ ...solicitud, telefono: e.target.value })}
+										required
+									/>
+								</div>
+								<div className="mb-3">
+									<label className="form-label small fw-bold text-muted">MOTIVO DE CONSULTA</label>
+									<select
+										className="form-select bg-light border-0"
+										style={{ borderRadius: "10px" }}
+										value={solicitud.motivo}
+										onChange={(e) => setSolicitud({ ...solicitud, motivo: e.target.value })}
+									>
+										<option value="Control Rutinario">Control Rutinario</option>
+										<option value="Urgencia">Urgencia</option>
+										<option value="Seguimiento">Seguimiento</option>
+										<option value="Otros">Otros</option>
+									</select>
+								</div>
+								<button type="submit" className="btn w-100 mt-3 fw-bold text-white shadow-sm py-2" style={{ backgroundColor: "#e8888c", borderRadius: "12px" }}>
+									Enviar Solicitud
+								</button>
+							</form>
 						</div>
 					</div>
 				</div>

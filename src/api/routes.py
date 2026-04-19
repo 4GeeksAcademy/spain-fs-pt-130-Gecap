@@ -55,6 +55,30 @@ def get_my_appointments():
     appointments = Appointment.query.filter_by(doctor_id=doctor.doctor_id).all()
     return jsonify([a.serialize() for a in appointments]), 200
 
+@api.route('/external-appointment', methods=['POST'])
+def create_external_appointment():
+    data = request.get_json()
+      
+    doctor = Doctor.query.first() 
+    if not doctor:
+        return jsonify({"msg": "Debe haber al menos un médico registrado en el sistema"}), 400
+
+    try:       
+        new_app = Appointment(
+            doctor_id=doctor.doctor_id,          
+            patient_id=None, 
+            date=None, 
+            time=None,           
+            reason=f"NUEVA SOLICITUD WEB: {data.get('nombre')} - TEL: {data.get('telefono')} - MOTIVO: {data.get('motivo')}",
+            status="pendiente"
+        )
+        db.session.add(new_app)
+        db.session.commit()
+        return jsonify({"msg": "Solicitud enviada"}), 201
+    except Exception as e:
+        db.session.rollback()       
+        print(f"Error en DB: {str(e)}") 
+        return jsonify({"msg": "Error interno del servidor", "error": str(e)}), 500
 
 @api.route('/signup', methods=['POST'])
 def signup():

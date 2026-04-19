@@ -105,26 +105,24 @@ class Patient(db.Model):
 
 class Appointment(db.Model):
     __tablename__ = "appointment"
-    appointment_id: Mapped[int] = mapped_column(primary_key=True)
-    patient_id: Mapped[int] = mapped_column(ForeignKey("patient.patient_id"), nullable=False)
+    appointment_id: Mapped[int] = mapped_column(primary_key=True) 
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patient.patient_id"), nullable=True)    
     doctor_id: Mapped[int] = mapped_column(ForeignKey("doctor.doctor_id"), nullable=False)
-    
-    # Consejo: Usar String para fecha y hora por separado facilita la vida con los inputs de React
-    date: Mapped[str] = mapped_column(String(20), nullable=False) # "2024-05-20"
-    time: Mapped[str] = mapped_column(String(10), nullable=False) # "10:30"
+       
+    date: Mapped[str] = mapped_column(String(20), nullable=True) 
+    time: Mapped[str] = mapped_column(String(10), nullable=True) 
     
     reason: Mapped[str] = mapped_column(String(200), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pendiente")
 
-    doctor: Mapped["Doctor"] = relationship(back_populates="appointment")
+    doctor: Mapped["Doctor"] = relationship(back_populates="appointment")       
     patient: Mapped["Patient"] = relationship(back_populates="appointment")
 
     def serialize(self):
         return {
             "id": self.appointment_id,
             "patient_id": self.patient_id,
-            # Incluimos nombres para que el frontend no tenga que buscarlos
-            "patient_name": f"{self.patient.nombre} {self.patient.apellidos}" if self.patient else "Desconocido",
+            "patient_name": f"{self.patient.nombre} {self.patient.apellidos}" if self.patient else "Solicitud Externa",
             "doctor_id": self.doctor_id,
             "date": self.date,
             "time": self.time,
