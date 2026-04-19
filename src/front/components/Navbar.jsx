@@ -13,16 +13,16 @@ export const Navbar = () => {
                 </Link>
 
                 <div className="d-flex gap-2 gap-md-3">
-
                     <button
-                        className="btn fw-bold shadow-sm"
-                        style={{ backgroundColor: "#e8888c", color: "white", borderRadius: "8px", padding: "8px 20px", border: "none" }}
-                        data-bs-toggle="modal"
-                        data-bs-target="#citaRapidaModal"
+                        className="btn btn-sm fw-bold"
+                        style={{ backgroundColor: "#e8888c", color: "white", borderRadius: "8px" }}
+                        onClick={() => {
+                            const section = document.getElementById('portal-paciente');
+                            if (section) section.scrollIntoView({ behavior: 'smooth' });
+                        }}
                     >
-                        <i className="fas fa-calendar-check me-2"></i>Pedir Cita
+                        <i className="fas fa-calendar-check me-2"></i>Portal Paciente
                     </button>
-
                     <Link to="/login" className="btn fw-bold"
                         style={{
                             backgroundColor: "#5e888c",
@@ -33,7 +33,7 @@ export const Navbar = () => {
                         <i className="fas fa-user-md me-2"></i>Acceso Médicos
                     </Link>
                 </div>
-            </div>           
+            </div>
         </nav>
     );
 };

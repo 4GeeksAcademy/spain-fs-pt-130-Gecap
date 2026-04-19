@@ -1,16 +1,20 @@
-import React, { useState } from "react"; // Añadido React para evitar advertencias
+import React, { useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Link, useNavigate } from "react-router-dom";
 import "./SignUp.css";
 import logo from "../assets/img/gecap_navbar_clean.png";
 
 function SignUp() {
     const navigate = useNavigate();
+    const { store, dispatch } = useGlobalReducer();
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         password: "",
         confirmPassword: "",
+        especialidad: "",
+        numColegiado: "",
         role: "medico"
     });
     const [error, setError] = useState(null);
@@ -50,70 +54,100 @@ function SignUp() {
                 body: JSON.stringify({
                     email: formData.email,
                     password: formData.password,
-                    nombre: `${formData.firstName} ${formData.lastName}`,
-                    role: formData.role 
+                    nombre: formData.firstName,
+                    apellidos: formData.lastName,
+                    especialidad: formData.especialidad,
+                    num_colegiado: formData.numColegiado,
+                    role: formData.role
                 })
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert("Cuenta de profesional creada con éxito. Ahora puedes iniciar sesión.");
-                navigate("/login");
+                localStorage.clear();
+
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("role", data.role);
+                localStorage.setItem("userName", data.user.nombre);
+
+                dispatch({ type: "login", payload: data });
+
+                window.location.href = "/areapersonal";
+
             } else {
                 setError(data.msg || "Error en el registro");
             }
-        } catch (err) {
-            setError("No se pudo conectar con el servidor");
+        } catch (error) {
+            console.error("Error en signup:", err);
+            setError("No se pudo conectar con el servidor. Verifica tu conexión.");
         }
     };
 
     return (
-    <div className="signup-page d-flex justify-content-center align-items-center vh-100">
-                
-        <div className="d-flex flex-column align-items-center" style={{ width: "100%", maxWidth: "500px" }}>
-            
-            <div className="signup-card w-100">
-                <div className="signup-logo">
-                    <img src={logo} alt="Logo GECAP" />
-                </div>
+        <div className="signup-page d-flex justify-content-center align-items-center vh-100">
 
-                <h5 className="text-center mb-4 fw-bold" style={{ color: "#5e888c" }}>Registro de Profesional</h5>
+            <div className="d-flex flex-column align-items-center" style={{ width: "100%", maxWidth: "500px" }}>
 
-                {error && <div className="alert alert-danger p-2 small text-center">{error}</div>}
-               
-                <form className="signup-form" onSubmit={handleSubmit} autoComplete="off">
-                    <input type="text" name="firstName" placeholder="Nombre" value={formData.firstName} onChange={handleChange} autoComplete="new-name" required />
-                    <input type="text" name="lastName" placeholder="Apellido" value={formData.lastName} onChange={handleChange} autoComplete="new-surname" required />
-                    <input type="email" name="email" placeholder="Correo electrónico profesional" value={formData.email} onChange={handleChange} autoComplete="new-email" required />
-                    
-                    <div className="input-group mb-3">
-                        <input type={showPassword ? "text" : "password"} name="password" className="form-control" placeholder="Contraseña" value={formData.password} onChange={handleChange} autoComplete="new-password" required />
-                        <span className="input-group-text bg-light border-0" onClick={togglePasswordVisibility} style={{ cursor: "pointer" }}>
-                            <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`} style={{ color: "#5e888c" }}></i>
-                        </span>
-                    </div>
-                    
-                    <div className="input-group mb-3">
-                        <input type={showPassword ? "text" : "password"} name="confirmPassword" className="form-control" placeholder="Confirmar contraseña" value={formData.confirmPassword} onChange={handleChange} autoComplete="new-password" required />
+                <div className="signup-card w-100">
+                    <div className="signup-logo">
+                        <img src={logo} alt="Logo GECAP" />
                     </div>
 
-                    <button type="submit" className="mt-2 w-100">Crear cuenta profesional</button>
-                </form>
+                    <h5 className="text-center mb-4 fw-bold" style={{ color: "#5e888c" }}>Registro de Profesional</h5>
 
-                <div className="signup-links">
-                    <Link to="/login">¿Ya tienes una cuenta? Inicia sesión</Link>
+                    {error && <div className="alert alert-danger p-2 small text-center">{error}</div>}
+
+                    <form className="signup-form" onSubmit={handleSubmit} autoComplete="off">
+                        <input type="password" style={{ display: 'none' }} autoComplete="new-password" />
+                        <div className="row g-2 mb-3">
+                            <div className="col-md-6">
+                                <input type="text" name="firstName" placeholder="Nombre" className="form-control" value={formData.firstName} onChange={handleChange} required />
+                            </div>
+                            <div className="col-md-6">
+                                <input type="text" name="lastName" placeholder="Apellidos" className="form-control" value={formData.lastName} onChange={handleChange} required />
+                            </div>
+                        </div>
+
+                        <input type="email" name="email" className="form-control mb-3" placeholder="Correo electrónico profesional" value={formData.email} onChange={handleChange} required />
+
+                        <div className="row g-2 mb-3">
+                            <div className="col-md-6">
+                                <input type="text" name="especialidad" placeholder="Especialidad" className="form-control" value={formData.especialidad} onChange={handleChange} required />
+                            </div>
+                            <div className="col-md-6">
+                                <input type="text" name="numColegiado" placeholder="Nº Colegiado" className="form-control" value={formData.numColegiado} onChange={handleChange} required />
+                            </div>
+                        </div>
+
+                        <div className="input-group mb-3">
+                            <input type={showPassword ? "text" : "password"} name="password" className="form-control" placeholder="Contraseña" value={formData.password} onChange={handleChange} autoComplete="new-password" required />
+                            <span className="input-group-text bg-light border-0" onClick={togglePasswordVisibility} style={{ cursor: "pointer" }}>
+                                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`} style={{ color: "#5e888c" }}></i>
+                            </span>
+                        </div>
+
+                        <div className="input-group mb-3">
+                            <input type={showPassword ? "text" : "password"} name="confirmPassword" className="form-control" placeholder="Confirmar contraseña" value={formData.confirmPassword} onChange={handleChange} autoComplete="new-password" required />
+                        </div>
+
+                        <button type="submit" className="mt-2 w-100 btn text-white" style={{ backgroundColor: "#5e888c" }}>
+                            Crear cuenta profesional
+                        </button>
+                    </form>
+                    <div className="signup-links">
+                        <Link to="/login">¿Ya tienes una cuenta? Inicia sesión</Link>
+                    </div>
                 </div>
-            </div> 
 
-            <div className="text-center mt-4 w-100" style={{ position: "relative", zIndex: 999 }}>
-                <Link to="/" className="text-decoration-none small fw-bold" style={{ color: "#5e888c", display: "inline-block" }}>
-                    <i className="fas fa-arrow-left me-2"></i>Volver a la página principal
-                </Link>
+                <div className="text-center mt-4 w-100" style={{ position: "relative", zIndex: 999 }}>
+                    <Link to="/" className="text-decoration-none small fw-bold" style={{ color: "#5e888c", display: "inline-block" }}>
+                        <i className="fas fa-arrow-left me-2"></i>Volver a la página principal
+                    </Link>
+                </div>
             </div>
-        </div> 
-    </div>
-);
+        </div>
+    );
 }
 
 export default SignUp;

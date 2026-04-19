@@ -22,6 +22,8 @@ class Doctor(db.Model):
     doctor_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     doctor_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    especialidad: Mapped[str] = mapped_column(String(100), nullable=True)
+    num_colegiado: Mapped[str] = mapped_column(String(50), nullable=True)
     appointment: Mapped[List["Appointment"]
                         ] = relationship(back_populates="doctor")
 
@@ -30,6 +32,8 @@ class Doctor(db.Model):
             "id": self.doctor_id,
             "user_id": self.user_id,
             "nombre": self.doctor_name,
+            "especialidad": self.especialidad,
+            "num_colegiado": self.num_colegiado
         }
 
 
