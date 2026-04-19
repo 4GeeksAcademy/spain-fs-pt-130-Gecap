@@ -52,7 +52,6 @@ function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
                                 onAgregarPaciente={onAgregarPaciente}
                                 onEliminarPaciente={onEliminarPaciente}
                             />
-
                             <textarea
                                 className="form-control border-0 bg-light"
                                 rows="2"

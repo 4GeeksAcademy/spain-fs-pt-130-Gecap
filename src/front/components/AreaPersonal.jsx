@@ -32,11 +32,30 @@ function AreaPersonal() {
     const eliminarPaciente = (id) => {
         setPacientesHoy(prev => prev.filter(p => p.id !== id));
     };
+
+    const citasNormalizadas = pacientesHoy.map(cita => ({
+        id: cita.id,
+        nombre: cita.nombre || "Sin nombre",
+        motivo: cita.motivo || "",
+        telefono: cita.telefono || "",
+        start: new Date(cita.start),
+        end: new Date(cita.end),
+        hora: cita.hora || "",
+    }));
+    const ahora = new Date();
+
+    const proximasCitas = citasNormalizadas
+        .filter(cita => cita.start && new Date(cita.start) > ahora)
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+    const proximaCita = proximasCitas[0] || null;
+
+
     return (
         <div className="container-fluid p-4" style={{ minHeight: "100vh" }}>
 
             <div className="mb-4">
-                <DoctorScheduleBar appointments={pacientesHoy} />
+                <DoctorScheduleBar appointments={citasNormalizadas} proximaCita={proximaCita}/>
             </div>
 
             <div className="row mb-4 g-3">
