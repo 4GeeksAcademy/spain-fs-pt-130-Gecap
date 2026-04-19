@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./SignUp.css";
 import logo from "../assets/img/gecap_navbar_clean.png";
 
-function SignUp() {
+export function SignUp() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: "",
@@ -69,8 +69,11 @@ function SignUp() {
     };
 
     return (
-        <div className="signup-page">
-            <div className="signup-card">
+    <div className="signup-page d-flex justify-content-center align-items-center vh-100">
+                
+        <div className="d-flex flex-column align-items-center" style={{ width: "100%", maxWidth: "500px" }}>
+            
+            <div className="signup-card w-100">
                 <div className="signup-logo">
                     <img src={logo} alt="Logo GECAP" />
                 </div>
@@ -79,69 +82,20 @@ function SignUp() {
 
                 {error && <div className="alert alert-danger p-2 small text-center">{error}</div>}
                
-                <form
-                    className="signup-form"
-                    onSubmit={handleSubmit}
-                    autoComplete="off"
-                >
-                
-                    <input
-                        type="text"
-                        name="firstName"
-                        placeholder="Nombre"
-                        value={formData.firstName} 
-                        onChange={handleChange}
-                        autoComplete="new-name" 
-                        required
-                    />
-                    
-                    <input
-                        type="text"
-                        name="lastName"
-                        placeholder="Apellido"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        autoComplete="new-surname"
-                        required
-                    />
-                 
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Correo electrónico profesional"
-                        value={formData.email}
-                        onChange={handleChange}
-                        autoComplete="new-email"
-                        required
-                    />
+                <form className="signup-form" onSubmit={handleSubmit} autoComplete="off">
+                    <input type="text" name="firstName" placeholder="Nombre" value={formData.firstName} onChange={handleChange} autoComplete="new-name" required />
+                    <input type="text" name="lastName" placeholder="Apellido" value={formData.lastName} onChange={handleChange} autoComplete="new-surname" required />
+                    <input type="email" name="email" placeholder="Correo electrónico profesional" value={formData.email} onChange={handleChange} autoComplete="new-email" required />
                     
                     <div className="input-group mb-3">
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            className="form-control"
-                            placeholder="Contraseña"
-                            value={formData.password}
-                            onChange={handleChange}
-                            autoComplete="new-password" 
-                            required
-                        />
+                        <input type={showPassword ? "text" : "password"} name="password" className="form-control" placeholder="Contraseña" value={formData.password} onChange={handleChange} autoComplete="new-password" required />
                         <span className="input-group-text bg-light border-0" onClick={togglePasswordVisibility} style={{ cursor: "pointer" }}>
                             <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`} style={{ color: "#5e888c" }}></i>
                         </span>
                     </div>
                     
                     <div className="input-group mb-3">
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            name="confirmPassword"
-                            className="form-control"
-                            placeholder="Confirmar contraseña"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            autoComplete="new-password"
-                            required
-                        />
+                        <input type={showPassword ? "text" : "password"} name="confirmPassword" className="form-control" placeholder="Confirmar contraseña" value={formData.confirmPassword} onChange={handleChange} autoComplete="new-password" required />
                     </div>
 
                     <button type="submit" className="mt-2 w-100">Crear cuenta profesional</button>
@@ -150,9 +104,14 @@ function SignUp() {
                 <div className="signup-links">
                     <Link to="/login">¿Ya tienes una cuenta? Inicia sesión</Link>
                 </div>
-            </div>
-        </div>
-    );
-}
+            </div> 
 
-export default SignUp;
+            <div className="text-center mt-4 w-100" style={{ position: "relative", zIndex: 999 }}>
+                <Link to="/" className="text-decoration-none small fw-bold" style={{ color: "#5e888c", display: "inline-block" }}>
+                    <i className="fas fa-arrow-left me-2"></i>Volver a la página principal
+                </Link>
+            </div>
+        </div> 
+    </div>
+);
+}
