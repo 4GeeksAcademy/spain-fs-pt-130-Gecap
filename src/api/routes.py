@@ -8,7 +8,6 @@ from flask_cors import CORS
 from sqlalchemy import select
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_bcrypt import Bcrypt
-import re
 
 bcrypt = Bcrypt()
 
