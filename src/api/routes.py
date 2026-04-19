@@ -104,84 +104,50 @@ def get_public_appointments(dni):
 def signup():
     data = request.get_json()
     email = data.get("email")
-    password = data.get("password")
-    nombre = data.get("nombre")
-    role = data.get("role")
-
-    user_exists = User.query.filter_by(email=email).first()
-    if user_exists:
-        return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
-
-    pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-
+    pw_hash = bcrypt.generate_password_hash(data.get("password")).decode('utf-8')
+    
     try:
-        new_user = User(email=email, password=pw_hash,
-                        role=role, is_active=True)
+        new_user = User(email=email, password=pw_hash, user_name=email, role=data.get("role"))
         db.session.add(new_user)
         db.session.flush()
 
-        if role == "medico":
-            new_profile = Doctor(doctor_name=nombre, user_id=new_user.id, especialidad=data.get("especialidad"),
+        if data.get("role") == "medico":
+            new_profile = Doctor(doctor_name=f"{data.get('nombre')} {data.get('apellidos')}", 
+                                 user_id=new_user.user_id, especialidad=data.get("especialidad"), 
                                  num_colegiado=data.get("num_colegiado"))
         else:
-            new_profile = Patient(nombre=nombre, user_id=new_user.id)
+            new_profile = Patient(nombre=data.get("nombre"), apellidos=data.get("apellidos"), 
+                                  user_id=new_user.user_id, dni=email)
 
         db.session.add(new_profile)
         db.session.commit()
-
-        access_token = create_access_token(identity=str(
-            new_user.id), additional_claims={"role": role})
-
-        return jsonify({
-            "token": access_token,
-            "role": role,
-            "user": {
-                "nombre": new_profile.doctor_name,
-                "especialidad": new_profile.especialidad,
-                "num_colegiado": new_profile.num_colegiado
-            },
-            "msg": "Registro exitoso"
-        }), 201
+        token = create_access_token(identity=str(new_user.user_id), additional_claims={"role": data.get("role")})
+        return jsonify({"token": token, "role": data.get("role"), "user": {"nombre": new_profile.doctor_name if data.get("role") == "medico" else new_profile.nombre}}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error en el registro: {str(e)}")
-        return jsonify({"msg": "Error al procesar el registro", "error": str(e)}), 500
+        print(f"🛑 ERROR REAL: {str(e)}")
+        return jsonify({"msg": "Error interno", "error": str(e)}), 500
 
 
 @api.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get("email")
-    password = data.get("password")
-
-    user_identity = User.query.filter_by(email=email).first()
-
-    if not user_identity:
-        return jsonify({"msg": "Email o contraseña incorrectos"}), 401
-
-    if bcrypt.check_password_hash(user_identity.password, password):
-        role = user_identity.role
-
-        if role == "medico":
-            perfil = Doctor.query.filter_by(user_id=user_identity.id).first()
-            user_data = perfil.serialize() if perfil else {
-                "doctor_name": "Médico"}
+    user = User.query.filter_by(email=data.get("email")).first()
+    if user and bcrypt.check_password_hash(user.password, data.get("password")):
+        if user.role == "medico":
+            perfil = Doctor.query.filter_by(user_id=user.user_id).first()
+            nombre = perfil.doctor_name if perfil else "Médico"
         else:
-            perfil = Patient.query.filter_by(user_id=user_identity.id).first()
-            user_data = perfil.serialize() if perfil else {
-                "patient_name": "Paciente"}
-
-        access_token = create_access_token(identity=str(
-            user_identity.id), additional_claims={"role": role})
-
-        return jsonify({
-            "token": access_token,
-            "user": user_data,
-            "role": role
-        }), 200
-
-    return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+            perfil = Patient.query.filter_by(user_id=user.user_id).first()
+            nombre = perfil.nombre if perfil else "Paciente"
+        
+        token = create_access_token(identity=str(user.user_id), additional_claims={"role": user.role})
+        return jsonify({"token": token, "role": user.role, "user": {"nombre": nombre}}), 200
+    return jsonify({"msg": "Error"}), 401
 
 
 @api.route('/perfil', methods=['GET'])

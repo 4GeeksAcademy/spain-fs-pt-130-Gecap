@@ -79,7 +79,7 @@ function SignUp() {
                 setError(data.msg || "Error en el registro");
             }
         } catch (error) {
-            console.error("Error en signup:", err);
+            console.error("Error en signup:", error);
             setError("No se pudo conectar con el servidor. Verifica tu conexión.");
         }
     };
