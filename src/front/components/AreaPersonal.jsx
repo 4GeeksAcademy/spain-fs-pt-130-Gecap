@@ -78,27 +78,6 @@ function AreaPersonal() {
         }
     };
 
-<<<<<<< HEAD
-    const citasNormalizadas = pacientesHoy.map(cita => ({
-        id: cita.id,
-        nombre: cita.nombre || "Sin nombre",
-        motivo: cita.motivo || "",
-        telefono: cita.telefono || "",
-        start: new Date(cita.start),
-        end: new Date(cita.end),
-        hora: cita.hora || "",
-    }));
-    const ahora = new Date();
-
-    const proximasCitas = citasNormalizadas
-        .filter(cita => cita.start && new Date(cita.start) > ahora)
-        .sort((a, b) => new Date(a.start) - new Date(b.start));
-
-    const proximaCita = proximasCitas[0] || null;
-
-
-=======
-
     const actualizarCita = async (id, datosActualizados) => {
     try {
         const response = await fetch(`https://special-train-g4vwpjx9pvqv3pvwv-3001.app.github.dev/api/appointment/${id}`, {
@@ -116,24 +95,45 @@ function AreaPersonal() {
     } catch (error) {
         console.log("Error al actualizar:", error);
     }
-};
->>>>>>> main
-    return (
-        <div className="container-fluid" style={{ minHeight: "100vh" }}>
+    };
 
-<<<<<<< HEAD
-            <div className="mb-4">
-                <DoctorScheduleBar appointments={citasNormalizadas} proximaCita={proximaCita}/>
-            </div>
-=======
+    const citasNormalizadas = pacientesHoy.map(cita => ({
+        id: cita.id,
+        nombre: cita.nombre || cita.patient_name || "Sin nombre",
+        motivo: cita.motivo || cita.reason || "",
+        telefono: cita.telefono || "",
+        start: cita.start ? new Date(cita.start) : null,
+        end: cita.end ? new Date(cita.end) : null,
+        hora: cita.hora || "",
+    }));
+
+    const ahora = new Date();
+
+    const proximasCitas = citasNormalizadas
+        .filter(cita => cita.start && cita.start > ahora)
+        .sort((a, b) => a.start - b.start);
+
+    const proximaCita = proximasCitas[0] || null;
+
+    return (
+        
+
+        <div className="container-fluid" style={{ minHeight: "100vh" }}>
             <div className="card border-0 shadow-sm" style={{ borderRadius: "15px", overflow: "hidden" }}>
                 <div style={{ height: "6px", backgroundColor: "#93bbbf" }}></div>
->>>>>>> main
 
                 <div className="card-body py-2 px-1">
                     <div className="d-flex justify-content-between align-items-center mb-2 mx-3">
                         <div>
-                            <span className="badge rounded-pill" style={{ fontSize: "0.9rem", backgroundColor: "rgba(147, 187, 191, 0.2)", color: "#566873", border: "1px solid #93bbbf" }}>
+                            <span
+                                className="badge rounded-pill"
+                                style={{
+                                    fontSize: "0.9rem",
+                                    backgroundColor: "rgba(147, 187, 191, 0.2)",
+                                    color: "#566873",
+                                    border: "1px solid #93bbbf"
+                                }}
+                            >
                                 <i className="fas fa-circle me-1" style={{ fontSize: "0.9rem" }}></i> Profesional Activo
                             </span>
                         </div>
@@ -146,7 +146,10 @@ function AreaPersonal() {
                     </div>
 
                     <div className="px-1">
-                        <DoctorScheduleBar appointments={pacientesHoy} />
+                        <DoctorScheduleBar
+                            appointments={citasNormalizadas}
+                            proximaCita={proximaCita}
+                        />
                     </div>
                 </div>
             </div>
@@ -155,14 +158,15 @@ function AreaPersonal() {
                 <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "20px", overflow: "hidden" }}>
                     <div style={{ height: "6px", width: "100%", backgroundColor: "#93bbbf" }}></div>
                     <div className="card-body p-3">
-                        <Calendario onAgregarCita={addAppointmentDataBase}
+                        <Calendario
+                            onAgregarCita={addAppointmentDataBase}
                             pacienteHoy={pacientesHoy}
-                            onEliminarCita={(id) =>eliminarPaciente(id)}
-                            onActualizarCita={(id,cita)=>actualizarCita(id,cita)} />
+                            onEliminarCita={(id) => eliminarPaciente(id)}
+                            onActualizarCita={(id, cita) => actualizarCita(id, cita)}
+                        />
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }
