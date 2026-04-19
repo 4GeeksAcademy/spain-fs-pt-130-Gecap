@@ -7,8 +7,7 @@ import "../Calendario/Calendario.css";
 
 
 function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCita}) {
-    // Esto hace que al seleccionar una fecha en el calendario pequenio se re-renderice el daypicker cpn la fecha seleccionada 
-
+    
     const [startDate, setStartDate] = useState(new Date());
 
     const manejarSeleccionDia = (date) => {
