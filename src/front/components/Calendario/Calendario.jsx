@@ -6,25 +6,14 @@ import CitasPorDia from './Citaspordia';
 import "../Calendario/Calendario.css";
 
 
-function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
+function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCita}) {
+    // Esto hace que al seleccionar una fecha en el calendario pequenio se re-renderice el daypicker cpn la fecha seleccionada 
 
     const [startDate, setStartDate] = useState(new Date());
 
     const manejarSeleccionDia = (date) => {
         setStartDate(date);
     };
-
-    // const agregarCita = () => {
-
-    //     const nuevaCita = {
-    //         id: Date.now(),
-    //         hora: "23:00",
-    //         nombre: "Carlos López",
-    //         motivo: "Control"
-    //     };
-
-    //     onAgregarPaciente(nuevaCita);
-    // };
 
     return (
         <div className="mt-2">
@@ -38,14 +27,16 @@ function Calendario({ onAgregarPaciente, onEliminarPaciente }) {
                                 year: 'numeric'
                             })}
                         </strong>
-                        <h5 className="badge rounded-3 bg-secondary text-light px-3 py-2 fw-bold " style={{ fontSize: "1rem", }}>Hoy</h5>
+                        <h5 className="badge rounded-3 text-light px-3 py-2 fw-bold " style={{ backgroundColor: "#93bbbf", fontSize: "1rem", }}>Hoy</h5>
 
                     </div>
 
                     <CitasPorDia
                         fechaSeleccionada={startDate}
-                        onAgregarPaciente={onAgregarPaciente}
-                        onEliminarPaciente={onEliminarPaciente}
+                        onAgregarCita={onAgregarCita}
+                        onEliminarCita={onEliminarCita}
+                        pacientesHoy={pacienteHoy}
+                        onActualizarCita={onActualizarCita}
                     />
                 </div>
 

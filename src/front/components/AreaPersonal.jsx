@@ -6,9 +6,11 @@ import DoctorScheduleBar from "./DoctorScheduleBar/DoctorScheduleBar";
 function AreaPersonal() {
     const [pacientesHoy, setPacientesHoy] = useState([]);
     const profesional = { nombre: "Juan Pérez" };
-
+    //pacientes hoy son los pacientes del dia
+    ///actualiza la lista de pacientes , con el use efect una vez al cargar la pagina, haciendo get =>
+    //como aqui se traen los datos (GEt) aqui haremos el post tambien
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments`, {
+        fetch("https://special-train-g4vwpjx9pvqv3pvwv-3001.app.github.dev/api/appointments", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -23,15 +25,78 @@ function AreaPersonal() {
                 console.log("Citas cargadas:", data);
                 setPacientesHoy(data);
             })
-            .catch((error) => console.error("Error:", error));
+            .catch((error) => console.log("Error:", error));
     }, []);
 
-    const stats = {
-        totalPacientes: pacientesHoy.length,
+
+    const addAppointmentDataBase = async (nuevoPaciente) => {
+        try {
+            const response = await fetch("https://special-train-g4vwpjx9pvqv3pvwv-3001.app.github.dev/api/appointment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    patient_id: nuevoPaciente.id,
+                    nombre: nuevoPaciente.nombre,
+                    date: nuevoPaciente.date,
+                    start: nuevoPaciente.start,
+                    end: nuevoPaciente.end,
+                    status: nuevoPaciente.status,
+                    reason: nuevoPaciente.reason || "Consulta"  //=> esto se debe modifica Cami, para hacer los de escoger la razon del bloqueo en la agenda
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setPacientesHoy(prev => [...prev, data.appointment]);
+            } else {
+                console.log("Error al guardar en el servidor");
+            }
+        } catch (error) {
+            console.log("Error de red:", error);
+        }
     };
-    const eliminarPaciente = (id) => {
-        setPacientesHoy(prev => prev.filter(p => p.id !== id));
+
+    const eliminarPaciente = async (id) => {
+        try {
+            const response = await fetch(`https://special-train-g4vwpjx9pvqv3pvwv-3001.app.github.dev/api/appointment/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+
+            if (response.ok) {
+                setPacientesHoy(prev => prev.filter(p => p.id !== id));
+            } else {
+                alert("No se pudo eliminar la cita en el servidor");
+            }
+        } catch (error) {
+            console.log("Error al eliminar:", error);
+        }
     };
+
+
+    const actualizarCita = async (id, datosActualizados) => {
+    try {
+        const response = await fetch(`https://special-train-g4vwpjx9pvqv3pvwv-3001.app.github.dev/api/appointment/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(datosActualizados)
+        });
+
+        if (response.ok) {
+            const citaEditada = await response.json();
+            setPacientesHoy(prev => prev.map(cita => cita.id === id ? citaEditada.datos : cita));
+        }
+    } catch (error) {
+        console.log("Error al actualizar:", error);
+    }
+};
     return (
         <div className="container-fluid" style={{ minHeight: "100vh" }}>
 
@@ -60,14 +125,13 @@ function AreaPersonal() {
             </div>
 
             <div className="col-md-12 mt-4">
-                <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "20px", overflow: "hidden" }}>                  
+                <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "20px", overflow: "hidden" }}>
                     <div style={{ height: "6px", width: "100%", backgroundColor: "#93bbbf" }}></div>
                     <div className="card-body p-3">
-                        <Calendario onAgregarPaciente={(nuevoPaciente) =>
-                            setPacientesHoy(prev => [...prev, nuevoPaciente])
-                        }
-                            onEliminarPaciente={(id) =>
-                                setPacientesHoy(prev => prev.filter(p => p.id !== id))} />                     
+                        <Calendario onAgregarCita={addAppointmentDataBase}
+                            pacienteHoy={pacientesHoy}
+                            onEliminarCita={(id) =>eliminarPaciente(id)}
+                            onActualizarCita={(id,cita)=>actualizarCita(id,cita)} />
                     </div>
                 </div>
             </div>

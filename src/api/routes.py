@@ -203,7 +203,6 @@ def delete_patient(id):
         return jsonify({"msg": "Error al eliminar", "error": str(e)}), 500
 
 
-# Endpoints para las citas ojo!!!!!!!!
 @api.route('/appointments', methods=['GET'])
 def get_all_appointment():
     result_all_appointment = db.session.execute(
@@ -222,8 +221,7 @@ def get_appointment(appointment_id):
 @api.route('/appointment', methods=['POST'])
 def add_appointment():
     data = request.get_json()
-    patient = db.session.execute(select(Patient).where(
-        Patient.nombre == "nombre"))
+    patient = db.session.execute(select(Patient).where(Patient.nombre == "prueba")).scalar_one_or_none()
 
     if not patient:
         patient = Patient(nombre=data["nombre"])
@@ -232,10 +230,12 @@ def add_appointment():
 
     new_appointment = Appointment(
         patient_id=patient.patient_id,
-        user_id=data["user_id"],
         date=data["date"],
-        time=data["time"],
-        status=data["status"],
+        start=data["start"],
+        end=data["end"],
+        status="Active",
+        reason=data["reason"],
+        user_id= 1
     )
 
     db.session.add(new_appointment)
@@ -250,28 +250,32 @@ def add_appointment():
 @api.route('/appointment/<int:appointment_id>', methods=['PUT'])
 def update_appointment(appointment_id):
     data = request.get_json()
+    print (data)
     appointment_actualizate = db.session.get(Appointment, appointment_id)
-    if appointment_actualizate is None:
+    if not appointment_actualizate:
         return jsonify({"msg": "Cita no encontrada"}), 404
 
+    appointment_actualizate.date = data["date"],
+    appointment_actualizate.status = data["status"],
+    appointment_actualizate.start = data["start"],
+    appointment_actualizate.end = data["end"],
+    appointment_actualizate.reason = data["reason"],
     appointment_actualizate.patient.nombre= data["nombre"],
-    appointment_actualizate.date= data["date"],
-    appointment_actualizate.status=data["status"],
-    appointment_actualizate.time=data["time"],
-    appointment_actualizate.reason=data["reason"],
+
+    print()
 
     db.session.commit()
 
-    return jsonify({"mensaje": f"Usuario {appointment_id} actualizado", "datos": data}), 200
+    return jsonify({"mensaje": f"Usuario {appointment_id} actualizado", "datos":appointment_actualizate.serialize()}), 200
 
 
 @api.route('/appointment/<int:appointment_id>', methods=['DELETE'])
 def delete_appointment(appointment_id):
 
     appointment_to_delete = db.session.execute(select(Appointment).where(
-        appointment_id == appointment_id)).scalar_one_or_none()
-    if appointment_to_delete is None:
-        return jsonify({"msg": "la cita no existe"}), 404
+        Appointment.appointment_id == appointment_id)).scalar_one_or_none()
+    if not appointment_to_delete:
+        return jsonify({"msg": "la cita no existe"}), 450
 
     db.session.delete(appointment_to_delete)
     db.session.commit()
