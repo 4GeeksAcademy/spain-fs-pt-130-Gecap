@@ -1,48 +1,45 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey, Integer, Float, Text, DateTime
+from sqlalchemy import String, Boolean, ForeignKey, Integer, Float, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
-from datetime import datetime
 
 db = SQLAlchemy()
 
 
 class User(db.Model):
     __tablename__ = "user"
-    id: Mapped[int] = mapped_column(primary_key=True)
+
+    user_id: Mapped[int] = mapped_column(primary_key=True)
+    user_name: Mapped[str] = mapped_column(String(30), nullable=False)
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(250), nullable=False)
-    role: Mapped[str] = mapped_column(String(20))
+    password: Mapped[str] = mapped_column(String(100), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
-
-class Doctor(db.Model):
-    __tablename__ = "doctor"
-    doctor_id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    doctor_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    appointment: Mapped[List["Appointment"]
-                        ] = relationship(back_populates="doctor")
+    appointments: Mapped[List["Appointment"]
+                         ] = relationship(back_populates="user")
 
     def serialize(self):
         return {
-            "id": self.doctor_id,
-            "user_id": self.user_id,
-            "nombre": self.doctor_name,
+            "id": self.user_id,
+            "user_name": self.user_name,
+            "email": self.email,
+            "is_active": self.is_active
         }
 
 
 class Patient(db.Model):
     __tablename__ = "patient"
+
     patient_id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=True)
     nombre: Mapped[str] = mapped_column(String(100), nullable=False)
     apellidos: Mapped[str] = mapped_column(String(100), nullable=False)
     dni: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(120))
     telefono: Mapped[str] = mapped_column(String(20))
     nacimiento: Mapped[str] = mapped_column(String(20), nullable=True)
+    appointments: Mapped[List["Appointment"]] = relationship(back_populates="patient")
 
     # Biometría y Constantes
     peso: Mapped[float] = mapped_column(Float, nullable=True)
@@ -70,8 +67,7 @@ class Patient(db.Model):
 
     anotaciones: Mapped[str] = mapped_column(Text, nullable=True)
 
-    appointment: Mapped[List["Appointment"]
-                        ] = relationship(back_populates="patient")
+   
 
     def serialize(self):
         return {
@@ -87,7 +83,7 @@ class Patient(db.Model):
             "glucosa": self.glucosa,
             "tension": self.tension,
             "spo2": self.spo2,
-           "grupoSanguineo": self.grupo_sanguineo,
+            "grupoSanguineo": self.grupo_sanguineo,
             "embarazo": self.embarazo,
             "hepatitis": self.hepatitis,
             "tuberculosis": self.tuberculosis,
@@ -102,6 +98,7 @@ class Patient(db.Model):
             "alergia_otros": self.alergia_otros,
             "anotaciones": self.anotaciones
         }
+
 
 class Appointment(db.Model):
     __tablename__ = "appointment"
