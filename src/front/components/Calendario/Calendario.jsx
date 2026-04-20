@@ -27,7 +27,11 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
                                 year: 'numeric'
                             })}
                         </strong>
-                        <h5 className="badge rounded-3 text-light px-3 py-2 fw-bold " style={{ backgroundColor: "#93bbbf", fontSize: "1rem", }}>Hoy</h5>
+                        <h5 className="badge rounded-3 text-light px-3 py-2 fw-bold " 
+                            style={{ backgroundColor: "#93bbbf", fontSize: "1rem", }}
+                        >
+                            Hoy
+                        </h5>
 
                     </div>
 

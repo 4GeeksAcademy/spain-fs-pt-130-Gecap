@@ -1,7 +1,7 @@
 import React from 'react';
 import "./DoctorScheduleBar.css";
 
-function DoctorScheduleBar({ appointments }) {
+function DoctorScheduleBar({ appointments, proximaCita }) {
   const workStart = 8;
   const workEnd = 24;
   const totalHours = workEnd - workStart;
@@ -27,8 +27,8 @@ function DoctorScheduleBar({ appointments }) {
 
     return {
       id: appointment.id,
-      title: appointment.reason || "Consulta",
-      patientName: appointment.patient_name || "Paciente",
+      title: appointment.motivo || "Consulta",
+      patientName: appointment.nombre || "Paciente",
       start,
       end
     };
@@ -90,7 +90,7 @@ function DoctorScheduleBar({ appointments }) {
 
       <div className="next-appointment-text">
         {nextAppointment
-          ? `Próxima consulta: ${nextAppointment.title}`
+          ? `Próxima consulta: ${nextAppointment.patientName} - ${nextAppointment.title}`
           : "No hay más consultas por hoy"}
       </div>
     </div>
