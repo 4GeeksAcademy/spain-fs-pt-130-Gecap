@@ -3,6 +3,7 @@ from sqlalchemy import String, Boolean, ForeignKey, Integer, Float, Text, DateTi
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
 from datetime import datetime
+import uuid
 
 db = SQLAlchemy()
 
@@ -87,7 +88,7 @@ class Patient(db.Model):
             "glucosa": self.glucosa,
             "tension": self.tension,
             "spo2": self.spo2,
-           "grupoSanguineo": self.grupo_sanguineo,
+            "grupoSanguineo": self.grupo_sanguineo,
             "embarazo": self.embarazo,
             "hepatitis": self.hepatitis,
             "tuberculosis": self.tuberculosis,
@@ -103,16 +104,20 @@ class Patient(db.Model):
             "anotaciones": self.anotaciones
         }
 
+
 class Appointment(db.Model):
     __tablename__ = "appointment"
     appointment_id: Mapped[int] = mapped_column(primary_key=True)
-    patient_id: Mapped[int] = mapped_column(ForeignKey("patient.patient_id"), nullable=False)
-    doctor_id: Mapped[int] = mapped_column(ForeignKey("doctor.doctor_id"), nullable=False)
+    public_token: Mapped[str] = mapped_column(String(100), unique=True, default=lambda: str(uuid.uuid4()))
+    patient_id: Mapped[int] = mapped_column(
+        ForeignKey("patient.patient_id"), nullable=False)
+    doctor_id: Mapped[int] = mapped_column(
+        ForeignKey("doctor.doctor_id"), nullable=False)
     
-    # Consejo: Usar String para fecha y hora por separado facilita la vida con los inputs de React
-    date: Mapped[str] = mapped_column(String(20), nullable=False) # "2024-05-20"
-    time: Mapped[str] = mapped_column(String(10), nullable=False) # "10:30"
-    
+    date: Mapped[str] = mapped_column(
+        String(20), nullable=False) 
+    time: Mapped[str] = mapped_column(String(10), nullable=False)  
+
     reason: Mapped[str] = mapped_column(String(200), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pendiente")
 
@@ -122,8 +127,8 @@ class Appointment(db.Model):
     def serialize(self):
         return {
             "id": self.appointment_id,
-            "patient_id": self.patient_id,
-            # Incluimos nombres para que el frontend no tenga que buscarlos
+            "public_token": self.public_token,
+            "patient_id": self.patient_id,          
             "patient_name": f"{self.patient.nombre} {self.patient.apellidos}" if self.patient else "Desconocido",
             "doctor_id": self.doctor_id,
             "date": self.date,
@@ -131,3 +136,4 @@ class Appointment(db.Model):
             "status": self.status,
             "reason": self.reason
         }
+

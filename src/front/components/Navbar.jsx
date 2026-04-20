@@ -12,8 +12,18 @@ export const Navbar = () => {
                     <span style={{ color: "#ebf2f1", fontWeight: "bold", letterSpacing: "1px" }}>GECAP</span>
                 </Link>
 
-                <div className="d-flex gap-3">
-                 
+                <div className="d-flex gap-3">                    
+                    <Link to="/cita-rapida" className="btn" 
+                        style={{ 
+                            backgroundColor: "#8ea69b", 
+                            color: "#ebf2f1",
+                            borderRadius: "8px",
+                            padding: "8px 20px",
+                            fontWeight: "500"
+                        }}>
+                        Solicitar Cita
+                    </Link>
+                   
                     <Link to="/login" className="btn" 
                         style={{ 
                             backgroundColor: "#5e888c", 
@@ -21,7 +31,7 @@ export const Navbar = () => {
                             borderRadius: "8px",
                             padding: "8px 20px"
                         }}>
-                        Acceso Plataforma
+                        Acceso Medicos
                     </Link>
                 </div>
             </div>

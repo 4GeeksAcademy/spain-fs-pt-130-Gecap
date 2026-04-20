@@ -15,6 +15,8 @@ import SignUp from "./pages/SignUp";
 import { Estadisticas } from "./components/Estadisticas";
 import AreaPersonal from "./components/AreaPersonal.jsx";
 import { ListaPacientes } from "./components/ListaPacientes.jsx";
+import { CitaRapida } from "./components/CitaRapida.jsx";
+import { VerCitaPublica } from "./components/VerCitaPublica.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,13 +30,15 @@ export const router = createBrowserRouter(
     <>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/cita-rapida" element={<CitaRapida />} />
+      <Route path="/ver-cita/:citaId" element={<VerCitaPublica />} />
 
       <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-        <Route element={<Home />} path="" /> 
+        <Route element={<Home />} path="" />
         <Route path="/healthform" element={<Healthform />} />
         <Route element={<FichaPaciente />} path="/paciente" />
         <Route element={<AgendaMedica />} path="/agenda" />
-        <Route element={<AreaPersonal/>} path="/areapersonal"/>
+        <Route element={<AreaPersonal />} path="/areapersonal" />
         <Route element={<Estadisticas />} path="/estadisticas" />
         <Route path="/pacientes" element={<ListaPacientes />} />
       </Route>

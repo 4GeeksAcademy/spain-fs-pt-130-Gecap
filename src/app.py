@@ -13,6 +13,7 @@ from api.commands import setup_commands
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+from flask_bcrypt import Bcrypt
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -23,9 +24,10 @@ app.config["JWT_SECRET_KEY"] = os.getenv("FLASK_APP_KEY", "una-clave-super-secre
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=12) 
 
 jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
 app.url_map.strict_slashes = False
 
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}}, send_wildcard=True, allow_headers=["Content-Type", "Authorization"])
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
