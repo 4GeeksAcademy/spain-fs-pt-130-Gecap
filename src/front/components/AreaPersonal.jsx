@@ -6,7 +6,9 @@ import DoctorScheduleBar from "./DoctorScheduleBar/DoctorScheduleBar";
 function AreaPersonal() {
     const [pacientesHoy, setPacientesHoy] = useState([]);
     const profesional = { nombre: "Juan Pérez" };
-
+    //pacientes hoy son los pacientes del dia
+    ///actualiza la lista de pacientes , con el use efect una vez al cargar la pagina, haciendo get =>
+    //como aqui se traen los datos (GEt) aqui haremos el post tambien
     useEffect(() => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments`, {
             method: "GET",
@@ -23,53 +25,146 @@ function AreaPersonal() {
                 console.log("Citas cargadas:", data);
                 setPacientesHoy(data);
             })
-            .catch((error) => console.error("Error:", error));
+            .catch((error) => console.log("Error:", error));
     }, []);
 
-    const stats = {
-        totalPacientes: pacientesHoy.length,
+
+    const addAppointmentDataBase = async (nuevoPaciente) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointment`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    patient_id: nuevoPaciente.id,
+                    nombre: nuevoPaciente.nombre,
+                    date: nuevoPaciente.date,
+                    start: nuevoPaciente.start,
+                    end: nuevoPaciente.end,
+                    status: nuevoPaciente.status,
+                    reason: nuevoPaciente.reason || "Consulta"  //=> esto se debe modifica Cami, para hacer los de escoger la razon del bloqueo en la agenda
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setPacientesHoy(prev => [...prev, data.appointment]);
+            } else {
+                console.log("Error al guardar en el servidor");
+            }
+        } catch (error) {
+            console.log("Error de red:", error);
+        }
     };
-    const eliminarPaciente = (id) => {
-        setPacientesHoy(prev => prev.filter(p => p.id !== id));
+
+    const eliminarPaciente = async (id) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointment/api/appointment/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+
+            if (response.ok) {
+                setPacientesHoy(prev => prev.filter(p => p.id !== id));
+            } else {
+                alert("No se pudo eliminar la cita en el servidor");
+            }
+        } catch (error) {
+            console.log("Error al eliminar:", error);
+        }
     };
+
+    const actualizarCita = async (id, datosActualizados) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointment/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(datosActualizados)
+            });
+
+            if (response.ok) {
+                const citaEditada = await response.json();
+                setPacientesHoy(prev => prev.map(cita => cita.id === id ? citaEditada.datos : cita));
+            }
+        } catch (error) {
+            console.log("Error al actualizar:", error);
+        }
+    };
+
+    const citasNormalizadas = pacientesHoy.map(cita => ({
+        id: cita.id,
+        nombre: cita.nombre || cita.patient_name || "Sin nombre",
+        motivo: cita.motivo || cita.reason || "",
+        telefono: cita.telefono || "",
+        start: cita.start ? new Date(cita.start) : null,
+        end: cita.end ? new Date(cita.end) : null,
+        hora: cita.hora || "",
+    }));
+
+    const ahora = new Date();
+
+    const proximasCitas = citasNormalizadas
+        .filter(cita => cita.start && cita.start > ahora)
+        .sort((a, b) => a.start - b.start);
+
+    const proximaCita = proximasCitas[0] || null;
+
     return (
-        <div className="container-fluid p-4" style={{ minHeight: "100vh" }}>
 
-            <div className="mb-4">
-                <DoctorScheduleBar appointments={pacientesHoy} />
-            </div>
 
-            <div className="row mb-4 g-3">
-                <div className="col-lg-12">
-                    <div className="card border-0 shadow-sm p-4 h-100 " style={{ borderRadius: "20px", borderLeft: "8px solid #93bbbf" }}>
-                        <h2 className="text-secondary mb-1" style={{ fontSize: "2em" }}>Bienvenido,{" "}
-                            <span className="fw-bold" style={{ color: "#566873", fontSize: "1.7em" }}>{profesional.nombre}{"!"}</span>
-                        </h2>
-                        <div className="mt-3">
-                            <span className="badge px-3 py-2" style={{ fontSize: "1.2em", backgroundColor: "#93bbbf", borderRadius: "10px" }}>
-                                <i className="fas fa-check-circle me-1"></i> Profesional Activo
-                            </span>
-                            <span className="badge px-3 py-2 mx-4" style={{ fontSize: "1.2em", backgroundColor: "#e8888c", borderRadius: "10px" }}>
-                                <i className="fas fa-check-circle me-1"></i> {stats.totalPacientes === 0
-                                    ? "No tienes pacientes hoy"
-                                    : `Tienes ${stats.totalPacientes} paciente${stats.totalPacientes > 1 ? "s" : ""} hoy`}
+        <div className="container-fluid" style={{ minHeight: "100vh" }}>
+            <div className="card border-0 shadow-sm" style={{ borderRadius: "15px", overflow: "hidden" }}>
+                <div style={{ height: "6px", backgroundColor: "#93bbbf" }}></div>
+
+                <div className="card-body py-2 px-1">
+                    <div className="d-flex justify-content-between align-items-center mb-2 mx-3">
+                        <div>
+                            <span
+                                className="badge rounded-pill"
+                                style={{
+                                    fontSize: "0.9rem",
+                                    backgroundColor: "rgba(147, 187, 191, 0.2)",
+                                    color: "#566873",
+                                    border: "1px solid #93bbbf"
+                                }}
+                            >
+                                <i className="fas fa-circle me-1" style={{ fontSize: "0.9rem" }}></i> Profesional Activo
                             </span>
                         </div>
 
+                        <div className="text-end">
+                            <p className="text-muted mb-0" style={{ fontSize: "1.3rem" }}>
+                                Bienvenido, <span className="fw-bold" style={{ color: "#4a5568" }}>{profesional.nombre}!</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="px-1">
+                        <DoctorScheduleBar
+                            appointments={citasNormalizadas}
+                            proximaCita={proximaCita}
+                        />
                     </div>
                 </div>
             </div>
 
             <div className="col-md-12 mt-4">
-                <div className="card border-0 shadow-sm p-3 h-100" style={{ borderRadius: "20px" }}>
-                    <Calendario onAgregarPaciente={(nuevoPaciente) =>
-                        setPacientesHoy(prev => [...prev, nuevoPaciente])
-                    }
-                        onEliminarPaciente={(id) =>
-                            setPacientesHoy(prev => prev.filter(p => p.id !== id))} />
-                    <button className="btn mt-3 fw-bold shadow-sm" style={{ backgroundColor: "#93bbbf", color: "white" }}>
-                        + Nueva Consulta
-                    </button>
+                <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "20px", overflow: "hidden" }}>
+                    <div style={{ height: "6px", width: "100%", backgroundColor: "#93bbbf" }}></div>
+                    <div className="card-body p-3">
+                        <Calendario
+                            onAgregarCita={addAppointmentDataBase}
+                            pacienteHoy={pacientesHoy}
+                            onEliminarCita={(id) => eliminarPaciente(id)}
+                            onActualizarCita={(id, cita) => actualizarCita(id, cita)}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
