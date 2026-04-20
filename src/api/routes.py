@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Patient, Appointment
+from api.models import db, User, Doctor, Patient, Appointment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
@@ -13,7 +13,49 @@ bcrypt = Bcrypt()
 
 api = Blueprint('api', __name__)
 
-CORS(api)
+CORS(api, resources={r"/*": {"origins": "*"}})
+
+
+@api.route('/external-appointment', methods=['POST'])
+def create_external_appointment():
+    data = request.get_json()
+
+    doctor = Doctor.query.first()
+    if not doctor:
+        return jsonify({"msg": "Debe haber al menos un médico registrado en el sistema"}), 400
+
+    try:
+        new_app = Appointment(
+            doctor_id=doctor.doctor_id,
+            patient_id=None,
+            date=None,
+            time=None,
+            reason=f"NUEVA SOLICITUD WEB: {data.get('nombre')} - TEL: {data.get('telefono')} - MOTIVO: {data.get('motivo')}",
+            status="pendiente"
+        )
+        db.session.add(new_app)
+        db.session.commit()
+        return jsonify({"msg": "Solicitud enviada"}), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error en DB: {str(e)}")
+        return jsonify({"msg": "Error interno del servidor", "error": str(e)}), 500
+
+
+@api.route('/public-appointments/<string:dni>', methods=['GET'])
+def get_public_appointments(dni):
+    patient = Patient.query.filter(Patient.dni.ilike(dni)).first()
+
+    if not patient:
+        return jsonify({"msg": "No se encontró el paciente"}), 404
+
+    appointments = Appointment.query.filter_by(
+        patient_id=patient.patient_id).all()
+
+    return jsonify({
+        "paciente": patient.nombre,
+        "citas": [a.serialize() for a in appointments if a.status != "cancelada"]
+    }), 200
 
 
 @api.route('/signup', methods=['POST'])
@@ -31,20 +73,23 @@ def signup():
     pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     try:
-        new_user = User(email=email, password=pw_hash,
-                        role=role, is_active=True)
+        new_user = User(email=email, password=pw_hash, user_name=email, role=data.get("role"))
         db.session.add(new_user)
         db.session.flush()
 
         if role == "medico":
             new_profile = Doctor(doctor_name=nombre, user_id=new_user.id)
         else:
-            new_profile = Patient(nombre=nombre, user_id=new_user.id)
+            new_profile = Patient(nombre=data.get("nombre"), apellidos=data.get("apellidos"), 
+                                  user_id=new_user.user_id, dni=email)
 
         db.session.add(new_profile)
         db.session.commit()
-
-        return jsonify({"msg": f"Registro de {role} exitoso"}), 201
+        token = create_access_token(identity=str(new_user.user_id), additional_claims={"role": data.get("role")})
+        return jsonify({"token": token, "role": data.get("role"), "user": {"nombre": new_profile.doctor_name if data.get("role") == "medico" else new_profile.nombre}}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
     except Exception as e:
         db.session.rollback()
@@ -55,21 +100,11 @@ def signup():
 @api.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get("email")
-    password = data.get("password")
-
-    user_identity = User.query.filter_by(email=email).first()
-
-    if not user_identity:
-        return jsonify({"msg": "Email o contraseña incorrectos"}), 401
-
-    if bcrypt.check_password_hash(user_identity.password, password):
-        role = user_identity.role
-
-        if role == "medico":
-            perfil = Doctor.query.filter_by(user_id=user_identity.id).first()
-            user_data = perfil.serialize() if perfil else {
-                "doctor_name": "Médico"}
+    user = User.query.filter_by(email=data.get("email")).first()
+    if user and bcrypt.check_password_hash(user.password, data.get("password")):
+        if user.role == "medico":
+            perfil = Doctor.query.filter_by(user_id=user.user_id).first()
+            nombre = perfil.doctor_name if perfil else "Médico"
         else:
             perfil = Patient.query.filter_by(user_id=user_identity.id).first()
             user_data = perfil.serialize() if perfil else {
@@ -78,13 +113,6 @@ def login():
         access_token = create_access_token(identity=str(
             user_identity.id), additional_claims={"role": role})
 
-        return jsonify({
-            "token": access_token,
-            "user": user_data,
-            "role": role
-        }), 200
-
-    return jsonify({"msg": "Email o contraseña incorrectos"}), 401
 
 
 @api.route('/perfil', methods=['GET'])

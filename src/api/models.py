@@ -5,32 +5,29 @@ from typing import List
 
 db = SQLAlchemy()
 
-
 class User(db.Model):
     __tablename__ = "user"
-
     user_id: Mapped[int] = mapped_column(primary_key=True)
-    user_name: Mapped[str] = mapped_column(String(30), nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
+    user_name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(100), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
-    appointments: Mapped[List["Appointment"]
-                         ] = relationship(back_populates="user")
+class Doctor(db.Model):
+    __tablename__ = "doctor"
+    doctor_id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"))
+    doctor_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    especialidad: Mapped[str] = mapped_column(String(100), nullable=True)
+    num_colegiado: Mapped[str] = mapped_column(String(50), nullable=True)
+    appointments: Mapped[List["Appointment"]] = relationship(back_populates="doctor")
 
     def serialize(self):
-        return {
-            "id": self.user_id,
-            "user_name": self.user_name,
-            "email": self.email,
-            "is_active": self.is_active
-        }
-
+        return {"id": self.doctor_id, "nombre": self.doctor_name, "especialidad": self.especialidad}
 
 class Patient(db.Model):
     __tablename__ = "patient"
-
     patient_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=True)
     nombre: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -70,39 +67,10 @@ class Patient(db.Model):
    
 
     def serialize(self):
-        return {
-            "id": self.patient_id,
-            "nombre": self.nombre,
-            "apellidos": self.apellidos,
-            "dni": self.dni,
-            "email": self.email,
-            "telefono": self.telefono,
-            "nacimiento": self.nacimiento,
-            "peso": self.peso,
-            "altura": self.altura,
-            "glucosa": self.glucosa,
-            "tension": self.tension,
-            "spo2": self.spo2,
-            "grupoSanguineo": self.grupo_sanguineo,
-            "embarazo": self.embarazo,
-            "hepatitis": self.hepatitis,
-            "tuberculosis": self.tuberculosis,
-            "vih": self.vih,
-            "radiacion_cabeza": self.radiacion_cabeza,
-            "cancer": self.cancer,
-            "alergia_penicilina": self.alergia_penicilina,
-            "alergia_terramicina": self.alergia_terramicina,
-            "alergia_anestesia": self.alergia_anestesia,
-            "alergia_latex": self.alergia_latex,
-            "alergia_aines": self.alergia_aines,
-            "alergia_otros": self.alergia_otros,
-            "anotaciones": self.anotaciones
-        }
-
+        return {"id": self.patient_id, "nombre": self.nombre, "apellidos": self.apellidos, "dni": self.dni or "Sin DNI"}
 
 class Appointment(db.Model):
     __tablename__ = "appointment"
-
     appointment_id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(
         ForeignKey("patient.patient_id"), nullable=False)

@@ -15,6 +15,7 @@ import SignUp from "./pages/SignUp";
 import { Estadisticas } from "./components/Estadisticas";
 import AreaPersonal from "./components/AreaPersonal.jsx";
 import { ListaPacientes } from "./components/ListaPacientes.jsx";
+import { PublicAppointments } from "./components/PublicAppointments.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,6 +29,7 @@ export const router = createBrowserRouter(
     <>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route element={<PublicAppointments />} path="/mis-citas/:dni" />
 
       <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
         <Route element={<Home />} path="" /> 
@@ -36,7 +38,7 @@ export const router = createBrowserRouter(
         <Route element={<AgendaMedica />} path="/agenda" />
         <Route element={<AreaPersonal/>} path="/areapersonal"/>
         <Route element={<Estadisticas />} path="/estadisticas" />
-        <Route path="/pacientes" element={<ListaPacientes />} />
+        <Route path="/pacientes" element={<ListaPacientes />} />        
       </Route>
     </>
   )

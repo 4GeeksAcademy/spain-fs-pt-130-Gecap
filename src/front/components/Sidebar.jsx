@@ -15,9 +15,7 @@ export const Sidebar = () => {
         { name: "Área personal", path: "/areapersonal", icon: "fas fa-notes-medical" },
         { name: "Estadisticas", path: "/estadisticas", icon: "fas fa-chart-line" },
         { name: "Agenda Médica", path: "/agenda", icon: "fas fa-calendar-alt" },
-        { name: "Alta de Paciente", path: "/healthform", icon: "fas fa-user-plus" },
-        { name: "Ficha de Paciente", path: "/paciente", icon: "fas fa-id-card-alt" },
-        { name: "Listado de Pacientes", path: "/pacientes", icon: "fas fa-users" },
+        { name: "Listado de Pacientes", path: "/pacientes", icon: "fas fa-users" }, // Dejamos este como principal
     ];
 
     const currentRole = store.role || localStorage.getItem("userRole");
@@ -28,7 +26,8 @@ export const Sidebar = () => {
 
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
+
+        localStorage.clear();
         window.location.href = "/login";
     };
 
@@ -47,11 +46,16 @@ export const Sidebar = () => {
             {/* INFO DEL USUARIO LOGUEADO */}
             <div className="text-center my-3">
                 <p className="mb-0 small opacity-75 text-uppercase fw-bold" style={{ fontSize: "0.6rem" }}>
-                    {store.role === "medico" ? "Facultativo" : "Paciente"}
+                    {currentRole === "medico" ? "Facultativo" : "Paciente"}
                 </p>
                 <h6 className="fw-bold" style={{ color: "#b4d2d9" }}>
-                    {store.user?.nombre || "Usuario"}
+                    {store.user?.nombre || localStorage.getItem("userName") || "Usuario"}
                 </h6>
+                {store.user?.especialidad && (
+                    <p className="small mb-0" style={{ fontSize: "0.7rem", color: "#93bbbf" }}>
+                        {store.user.especialidad}
+                    </p>
+                )}
             </div>
 
             <hr style={{ backgroundColor: "#93bbbf", opacity: 0.5 }} />
@@ -63,7 +67,7 @@ export const Sidebar = () => {
                         <li key={index} className="nav-item">
                             <Link
                                 to={item.path}
-                                className={`nav-link mb-2 ${isActive ? 'active' : ''}`}                            
+                                className={`nav-link mb-2 ${isActive ? 'active' : ''}`}
                                 onClick={() => {
                                     if (item.name === "Alta de Paciente") {
                                         dispatch({ type: "clear_patient" });
