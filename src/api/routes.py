@@ -305,3 +305,22 @@ def handle_external_appointment():
         db.session.rollback()       
         print(f"Error en el servidor: {str(e)}")
         return jsonify({"msg": "Error al procesar la solicitud", "error": str(e)}), 500
+    
+@api.route('/messages/<string:dni>', methods=['GET'])
+def get_messages_by_dni(dni):    
+    messages = Message.query.filter_by(dni=dni.upper()).all()
+    
+    if not messages:
+        return jsonify({"msg": "No se encontraron solicitudes para este DNI"}), 404
+       
+    return jsonify([m.serialize() for m in messages]), 200
+
+@api.route('/messages', methods=['GET'])
+@jwt_required()
+def get_all_messages():
+    try:        
+        messages = Message.query.all()
+        return jsonify([m.serialize() for m in messages]), 200
+    except Exception as e:
+        print(f"Error en /messages: {str(e)}")
+        return jsonify({"msg": "Error interno"}), 500
