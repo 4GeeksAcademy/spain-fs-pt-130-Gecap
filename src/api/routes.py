@@ -200,7 +200,6 @@ def delete_patient(id):
         return jsonify({"msg": "Error al eliminar", "error": str(e)}), 500
 
 @api.route('/appointments', methods=['GET'])
-@jwt_required()
 def get_all_appointment():
     result_all_appointment = db.session.execute(
         select(Appointment)).scalars().all()
@@ -208,7 +207,6 @@ def get_all_appointment():
 
 
 @api.route('/appointment/<int:appointment_id>', methods=['GET'])
-@jwt_required
 def get_appointment(appointment_id):
     appointment = db.session.get(Appointment, appointment_id)
     if appointment is None:
@@ -217,7 +215,6 @@ def get_appointment(appointment_id):
 
 
 @api.route('/appointment', methods=['POST'])
-@jwt_required
 def add_appointment():
     data = request.get_json()
     patient = db.session.execute(select(Patient).where(Patient.nombre == "prueba")).scalar_one_or_none()
@@ -247,7 +244,6 @@ def add_appointment():
 
 
 @api.route('/appointment/<int:appointment_id>', methods=['PUT'])
-@jwt_required
 def update_appointment(appointment_id):
     data = request.get_json()
     appointment_actualizate = db.session.get(Appointment, appointment_id)
@@ -267,7 +263,6 @@ def update_appointment(appointment_id):
 
 
 @api.route('/appointment/<int:appointment_id>', methods=['DELETE'])
-@jwt_required
 def delete_appointment(appointment_id):
 
     appointment_to_delete = db.session.execute(select(Appointment).where(
@@ -278,3 +273,33 @@ def delete_appointment(appointment_id):
     db.session.delete(appointment_to_delete)
     db.session.commit()
     return jsonify({"msg": "Eliminado con exito"}), 200
+
+@api.route('/appointment/<int:appointment_id>/dataprotection', methods=['GET'])
+def get_dataprotection(appointment_id):
+    appointment = db.session.get(Appointment, appointment_id)
+    if appointment is None:
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    payload = {
+        "data": {"nombre": "Belkis"},
+        "template_id": "80e77b235475876c",
+        "export_type": "json",
+        "expiration": 60,
+        "load_async": False
+    }
+        
+   
+
+    response = requests.post(
+        "https://craftmypdf.com",
+        json=payload,
+        headers=headers
+    )
+
+    if response.status_code == 200:
+        data_json = response.json()
+        pdf_url = data_json.get("file")
+        appointmentAux = appointment.serialize()
+        appointmentAux.pdfUrl = pdf_url
+        return jsonify(), 200
+    else:
+        return jsonify({"error": "Error en CraftMyPDF", "details": response.text}), response.status_code
