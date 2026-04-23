@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DayPilot, DayPilotCalendar } from "@daypilot/daypilot-lite-react";
 
 
-const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacientesHoy, onActualizarCita }) => {
+const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacientesHoy, onActualizarCita, abrirModalBoton, setAbrirModalBoton }) => {
 
     const [calendar, setCalendar] = useState(null);
     const [showModal, setShowModal] = useState(false);
@@ -10,31 +10,85 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
 
     const [formData, setFormData] = useState({
         nombre: "",
+        apellido: "",
         telefono: "",
         motivo: "",
-        otroMotivo: ""
+        otroMotivo: "",
+        horaCita: "10:00"
     });
     
     useEffect(() => {
-        if (!calendar || calendar.disposed())
-            return;
+        if (!calendar || calendar.disposed()) return;
 
+        const eventos = pacientesHoy.map((p) => {
+            const startValue = p.start || p.date;
+            if (!startValue) return null;
+
+            const start = new DayPilot.Date(startValue);
+
+            const end = p.end
+                ? new DayPilot.Date(p.end)
+                : start.addMinutes(30);
+
+            return {
+                id: p.id,
+                text: `${(p.nombre || p.patient_name || "Paciente")
+                    .replace(/None/g, "")
+                    .replace(/\s+/g, " ")
+                    .trim()} - ${p.motivo || p.reason || "Consulta"}`,
+                start,
+                end,
+                backColor: "#93c47d",
+            };
+        }).filter(Boolean);
+
+        
         calendar.update({
             startDate: new DayPilot.Date(fechaSeleccionada),
-            events: pacientesHoy.map(p => ({
-                id: p.id,
-                text: `${p.nombre || p.patient_name || "Paciente"} - ${p.motivo || p.reason || "Consulta"}`,
-                start: p.start,
-                end: p.end,
-                backColor: "#93c47d",
-            })),
-
+            events: eventos
         });
+
     }, [calendar, fechaSeleccionada, pacientesHoy]);
+    
+    useEffect(() => {
+        if (abrirModalBoton) {
+            const hoy = new Date(fechaSeleccionada);
+
+            const start = new DayPilot.Date(
+                new Date(
+                    hoy.getFullYear(),
+                    hoy.getMonth(),
+                    hoy.getDate(),
+                    10,
+                    0
+                )
+            );
+
+            const end = new DayPilot.Date(
+                new Date(
+                    hoy.getFullYear(),
+                    hoy.getMonth(),
+                    hoy.getDate(),
+                    10,
+                    30
+                )
+            );
+
+            setSelectedRange({ start, end });
+
+            setFormData((prev) => ({
+                ...prev,
+                horaCita: "10:00"
+            }));
+
+            setShowModal(true);
+            setAbrirModalBoton(false);
+        }
+    }, [abrirModalBoton, fechaSeleccionada, setAbrirModalBoton]);
 
 
     const handleGuardarCita = () => {
-        // Validaciones
+        
         if (!formData.nombre.trim()) {
             alert("El nombre es obligatorio");
             return;
@@ -53,40 +107,63 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
             alert("El motivo de consulta es obligatorio");
             return;
         }
+
+        const nombreCompleto = `${formData.nombre} ${formData.apellido || ""}`
+            .replace(/None/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
     
+        const horaTexto = formData.horaCita || "10:00";
+        const [horaH, horaM] = horaTexto.split(":").map(Number);
+
+        const fechaBase = new Date(fechaSeleccionada);
+
+        const startDate =  new Date(
+            fechaBase.getFullYear(),
+            fechaBase.getMonth(),
+            fechaBase.getDate(),
+            horaH,
+            horaM
+        )
+
+        const endDate = new Date(startDate);
+        endDate.setMinutes(endDate.getMinutes() + 30);
+
 
         const nuevaCita = {
             id: DayPilot.guid(),
-            text: `${formData.nombre} - ${motivoFinal}`,
-            start: selectedRange.start,
-            end: selectedRange.end,
+            text: `${nombreCompleto} - ${motivoFinal}`,
+            start: startDate,
+            end: endDate,
             backColor: "#93c47d",
         };
 
         onAgregarCita({
             id: nuevaCita.id,
-            nombre: formData.nombre,
+            nombre: nombreCompleto,
             motivo: motivoFinal,
             telefono: formData.telefono,
-            start: selectedRange.start,
-            end: selectedRange.end,
-            hora: new Date(selectedRange.start).toLocaleTimeString([], {
+            start: startDate.toLocaleString("sv-SE").replace(" ", "T"),
+            end: endDate.toLocaleString("sv-SE").replace(" ", "T"),
+            hora: startDate.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"
             }),
             reason: motivoFinal,
-            patient_name: formData.nombre,
+            patient_name: nombreCompleto,
             status: "Active",
-            date: new Date(selectedRange.start).toISOString()
+            date: startDate.toLocaleString("sv-SE").replace(" ", "T")
         });
 
         setShowModal(false);
 
         setFormData({
             nombre: "",
+            apellido: "",
             telefono: "",
             motivo: "",
-            otroMotivo: ""
+            otroMotivo: "",
+            horaCita: "10:00"
         });
 
         if (calendar) {
@@ -107,19 +184,32 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
         cellHeight: 40,
         theme: "calendar_default",
         durationBarVisible: false,
+        timeRangeSelectedHandling: "Enabled",
 
         onTimeRangeSelected: async (args) => {
+
+            const startDate = new Date(args.start.toString());
+
+            const horaSeleccionada = new Date(args.start.toString()).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
             setSelectedRange({
-            start: args.start,
-            end: args.end
-        });
+                start: args.start,
+                end: args.end
+            });
 
-        setShowModal(true);
+            setFormData((prev) => ({
+                ...prev,
+                horaCita: horaSeleccionada
+            }));
 
-        if (calendar) {
-            calendar.clearSelection();
-        }
-                
+            setShowModal(true);
+
+            if (calendar) {
+                calendar.clearSelection();
+            }
         },
 
         onBeforeEventRender: args => {
@@ -216,6 +306,14 @@ return (
                             setFormData({ ...formData, nombre: e.target.value })
                         }
                     />
+                    <input
+                        type="text"
+                        placeholder="Apellido"
+                        value={formData.apellido}
+                        onChange={(e) =>
+                            setFormData({ ...formData, apellido: e.target.value })
+                        }
+                    />
 
                     <input
                         type="tel"
@@ -226,6 +324,15 @@ return (
                                 ...formData,
                                 telefono: e.target.value.replace(/\D/g, "").slice(0, 9)
                             })
+                        }
+                    />
+
+                    <label>Hora de la cita</label>
+                    <input
+                        type="time"
+                        value={formData.horaCita}
+                        onChange={(e) =>
+                            setFormData({ ...formData, horaCita: e.target.value })
                         }
                     />
 
@@ -266,9 +373,11 @@ return (
                             setShowModal(false);
                             setFormData({
                                 nombre: "",
+                                apellido: "",
                                 telefono: "",
                                 motivo: "",
-                                otroMotivo: ""
+                                otroMotivo: "",
+                                horaCita: "10:00"
                             });
                         }}>
                             Cancelar
