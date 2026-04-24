@@ -68,17 +68,17 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
         cargarMensajes();
     }, []);
 
-    const handleAgregarCitaLocal = (nuevaCita) => {        
+    const handleAgregarCitaLocal = (nuevaCita) => {
         setCitas(prevCitas => [...prevCitas, nuevaCita]);
-        
+
         if (onAgregarCita) onAgregarCita(nuevaCita);
     };
-    
-    const handleEliminarCitaLocal = async (idCita) => {        
+
+    const handleEliminarCitaLocal = async (idCita) => {
         if (onEliminarCita) {
             await onEliminarCita(idCita);
         }
-        
+
         setCitas(prevCitas => prevCitas.filter(cita => (cita.id || cita.appointment_id) !== idCita));
     };
 
@@ -97,8 +97,8 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
 
                     <CitasPorDia
                         fechaSeleccionada={startDate}
-                        onAgregarCita={handleAgregarCitaLocal} 
-                        onEliminarCita={handleEliminarCitaLocal} 
+                        onAgregarCita={handleAgregarCitaLocal}
+                        onEliminarCita={handleEliminarCitaLocal}
                         pacientesHoy={citas}
                         onActualizarCita={onActualizarCita}
                         abrirModalForzado={solicitarNuevaCita}
@@ -154,7 +154,7 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
                                                 <th>DNI</th>
                                                 <th>Motivo</th>
                                                 <th>Teléfono</th>
-                                                <th>Acción</th>
+                                                <th className="text-center">Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -164,10 +164,48 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
                                                     <td>{msg.dni}</td>
                                                     <td><small>{msg.reason}</small></td>
                                                     <td>{msg.phone}</td>
-                                                    <td>
-                                                        <button className="btn btn-outline-danger btn-sm border-0" onClick={() => eliminarMensaje(msg.id)}>
-                                                            <i className="fas fa-trash"></i>
-                                                        </button>
+                                                    <td className="text-center">
+                                                        <div className="d-flex gap-2 justify-content-center">
+                                                            <button
+                                                                className="btn btn-sm text-white fw-bold shadow-sm"
+                                                                style={{ backgroundColor: "#93bbbf", borderRadius: "8px" }}
+                                                                onClick={() => {                                                                    
+                                                                    setFormData(prev => ({
+                                                                        ...prev,
+                                                                        nombre: msg.full_name,
+                                                                        telefono: msg.phone,
+                                                                        motivo: msg.reason,
+                                                                        message_id: msg.id,
+                                                                        patient_id: null
+                                                                    }));
+                                                                    
+                                                                    setSolicitarNuevaCita(true);
+                                                                    
+                                                                    const modalElement = document.getElementById('modalMensajesWeb');
+                                                                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                                                                    if (modalInstance) modalInstance.hide();
+                                                                  
+                                                                    setTimeout(() => {
+                                                                        if (window.confirm(`¿Deseas eliminar la solicitud de ${msg.full_name} de esta lista?`)) {
+                                                                            eliminarMensaje(msg.id);
+                                                                        }
+                                                                    }, 500);
+                                                                }}
+                                                            >
+                                                                <i className="fas fa-calendar-plus me-1"></i> Crear Consulta
+                                                            </button>
+
+                                                            <button
+                                                                className="btn btn-outline-danger btn-sm border-0"
+                                                                onClick={() => {
+                                                                    if (window.confirm("¿Eliminar este mensaje definitivamente?")) {
+                                                                        eliminarMensaje(msg.id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i className="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}

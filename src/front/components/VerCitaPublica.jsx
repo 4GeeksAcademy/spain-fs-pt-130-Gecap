@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 
 export const VerCitaPublica = () => {   
     const { citaId } = useParams(); 
-    const [solicitudes, setSolicitudes] = useState([]); // Inicializado como array vacío
+    const [solicitudes, setSolicitudes] = useState([]); 
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -12,8 +12,7 @@ export const VerCitaPublica = () => {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/messages/${citaId}`);
                 if (!response.ok) throw new Error("Error en la respuesta");
                 
-                const data = await response.json();
-                // Forzamos que sea un array para que .map() no falle nunca
+                const data = await response.json();               
                 setSolicitudes(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error("Error cargando solicitudes:", error);
