@@ -20,7 +20,7 @@ function AreaPersonal() {
                 return response.json();
             })
             .then((data) => {
-                console.log("Citas cargadas:", data);
+                console.log("Citas cargadas back:", data);
                 setPacientesHoy(data);
             })
             .catch((error) => console.log("Error:", error));
@@ -47,13 +47,23 @@ function AreaPersonal() {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                setPacientesHoy(prev => [...prev, data.appointment]);
+            const data = await response.json();
+
+                setPacientesHoy(prev => [
+                    ...prev,
+                    {
+                        ...nuevoPaciente,
+                        id: data.appointment?.id || nuevoPaciente.id
+                    }
+                ]);
             } else {
                 console.log("Error al guardar en el servidor");
+                setPacientesHoy(prev => [...prev, nuevoPaciente]);
             }
+
         } catch (error) {
             console.log("Error de red:", error);
+            setPacientesHoy(prev => [...prev, nuevoPaciente]);
         }
     };
 
@@ -97,7 +107,10 @@ function AreaPersonal() {
 
     const citasNormalizadas = pacientesHoy.map(cita => ({
         id: cita.id,
-        nombre: cita.nombre || cita.patient_name || "Sin nombre",
+        nombre: (cita.nombre || cita.patient_name || "Sin nombre")
+            .replace(/None/g, "")
+            .replace(/\s+/g, " ")
+            .trim(),
         motivo: cita.motivo || cita.reason || "",
         telefono: cita.telefono || "",
         start: cita.start ? new Date(cita.start) : null,
@@ -105,9 +118,21 @@ function AreaPersonal() {
         hora: cita.hora || "",
     }));
 
+    const hoy = new Date();
+
+    const citasDeHoy = citasNormalizadas.filter((cita) => {
+        if (!cita.start) return false;
+
+        return (
+            cita.start.getFullYear() === hoy.getFullYear() &&
+            cita.start.getMonth() === hoy.getMonth() &&
+            cita.start.getDate() === hoy.getDate()
+        );
+    });
+
     const ahora = new Date();
 
-    const proximasCitas = citasNormalizadas
+    const proximasCitas = citasDeHoy
         .filter(cita => cita.start && cita.start > ahora)
         .sort((a, b) => a.start - b.start);
 
@@ -145,7 +170,7 @@ function AreaPersonal() {
 
                     <div className="px-1">
                         <DoctorScheduleBar
-                            appointments={citasNormalizadas}
+                            appointments={citasDeHoy}
                             proximaCita={proximaCita}
                         />
                     </div>
