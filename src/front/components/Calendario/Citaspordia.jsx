@@ -33,7 +33,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                 text: `${p.nombre || p.patient_name || "Paciente"} - ${p.motivo || p.reason || "Consulta"}`,
                 start: p.start,
                 end: p.end,
-                backColor: p.status === "pendiente" ? "#93c47d" : "#b9878c",
+                backColor:  "#93c47d"
             })),
 
         });
