@@ -8,7 +8,8 @@ import "../Calendario/Calendario.css";
 function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCita }) {
     const [startDate, setStartDate] = useState(new Date());
     const [mensajesWeb, setMensajesWeb] = useState([]);
-  
+    const [seleccionarVista, setSeleccionarVista] = useState("Day");
+
     const manejarSeleccionDia = (date) => {
         setStartDate(date);
     };
