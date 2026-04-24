@@ -109,8 +109,8 @@ function AreaPersonal() {
     const proximaCita = proximasCitas[0] || null;
 
     return (
-        <div className="container-fluid" style={{ minHeight: "100vh" }}>
-            <div className="card border-0 shadow-sm" style={{ borderRadius: "15px", overflow: "hidden" }}>
+         <div className="container-fluid p-0"> {/* Quita el minHeight aquí */}
+        <div className="card border-0 shadow-sm" style={{ borderRadius: "15px", overflow: "hidden" }}>
                 <div style={{ height: "6px", backgroundColor: "#93bbbf" }}></div>
 
                 <div className="card-body py-2 px-1">

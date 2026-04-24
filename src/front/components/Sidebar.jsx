@@ -9,12 +9,12 @@ export const Sidebar = () => {
     console.log("Rol detectado en Sidebar:", store.role);
 
     const medicoItems = ["Área personal", "Estadisticas", "Alta de Paciente", "Ficha de Paciente"];
-    
+
 
     const menuItems = [
         { name: "Área personal", path: "/areapersonal", icon: "fas fa-notes-medical" },
-        { name: "Estadisticas", path: "/estadisticas", icon: "fas fa-chart-line" },        
-        { name: "Listado de Pacientes", path: "/pacientes", icon: "fas fa-users" }, 
+        { name: "Estadisticas", path: "/estadisticas", icon: "fas fa-chart-line" },
+        { name: "Listado de Pacientes", path: "/pacientes", icon: "fas fa-users" },
     ];
 
     const currentRole = store.role || localStorage.getItem("userRole");
@@ -41,13 +41,13 @@ export const Sidebar = () => {
                     style={{ width: "100px", height: "auto", objectFit: "contain" }}
                 />
             </div>
-            
+
             <div className="text-center my-3">
                 <p className="mb-0 small opacity-75 text-uppercase fw-bold" style={{ fontSize: "0.6rem" }}>
-                    {currentRole === "medico" ? "Facultativo" : "Paciente"}
+                    {store.role === "medico" ? "Facultativo" : "Paciente"}
                 </p>
-                <h6 className="fw-bold" style={{ color: "#b4d2d9" }}>
-                    {store.user?.nombre || localStorage.getItem("userName") || "Usuario"}
+                <h6 className="fw-bold" style={{ color: "#b4d2d9" }}>                  
+                    {store.user?.user_name || "Facultativo GECAP"}
                 </h6>
                 {store.user?.especialidad && (
                     <p className="small mb-0" style={{ fontSize: "0.7rem", color: "#93bbbf" }}>
