@@ -11,6 +11,15 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
     const [mostratModal, setMostrarModal] = useState(false);
     const [seleccionarCita, setSeleccionarCita] = useState(null);
 
+    const datosParaActualizar= (args) => {
+    const citaActual = args.e.data;
+    onActualizarCita(args.e.id(), {
+        ...citaActual,
+        start: args.newStart.toString(),
+        end: args.newEnd.toString(),
+        date: args.newStart.toString().split("T")[0] 
+    });
+};
 
 
     const [formData, setFormData] = useState({
@@ -33,7 +42,8 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                 text: `${p.nombre || p.patient_name || "Paciente"} - ${p.motivo || p.reason || "Consulta"}`,
                 start: p.start,
                 end: p.end,
-                backColor:  "#93c47d"
+                status: p.status,
+                backColor: p.status === "asistio" ? "#6e8d90" : p.status === "no asistio" ? "#a66d6d" : "#8184d6"
             })),
 
         });
@@ -66,7 +76,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
             text: `${formData.nombre} - ${motivoFinal}`,
             start: selectedRange.start,
             end: selectedRange.end,
-            backColor: "#93c47d",
+            backColor: "#93bbbf",
         };
 
         onAgregarCita({
@@ -104,56 +114,55 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
         viewType: seleccionarVista,
         headerDateFormat: "dd/MM/yyyy",
         columns: seleccionarVista === "Day" ? [{ name: "Agenda Médica", id: "C1" }] : undefined,
-        cellDuration: 10,
-        dayBeginsHour: 10,
-        dayEndsHour: 21,
-        businessBeginsHour: 10,
-        businessEndsHour: 21,
-        showCurrentTimeLine: true,
-        currentTimeLineColor: "red",
-        heightSpec: "BusinessHoursNoScroll",
+        timeRangeSelectedHandling: "Enabled",
+        eventResizeHandling: "Update",
+        eventMoveHandling: "Update",
         headerHeight: 50,
         cellHeight: 40,
         theme: "calendar_default",
         durationBarVisible: false,
 
-
+        onEventMoved: (args) => datosParaActualizar(args),
+        onEventResized: (args) => datosParaActualizar(args),
         onEventClick: async (args) => {
             const e = args.e;
+            args.originalEvent.stopPropagation();
             const datosPaciente = pacientesHoy.find(p => p.id === e.id());
             setSeleccionarCita(datosPaciente);
             setMostrarModal(true);
         },
-
         onTimeRangeSelected: async (args) => {
             setSelectedRange({
                 start: args.start,
                 end: args.end
             });
-
             setShowModal(true);
-
             if (calendar) {
                 calendar.clearSelection();
             }
-
         },
-
         onBeforeEventRender: args => {
             if (!args.data.backColor) {
-                args.data.backColor = "#93c47d";
+                args.data.backColor = "#93bbbf";
             }
-
             args.data.borderColor = "darker";
             args.data.fontColor = "white";
             args.data.areas = [
+                {
+                    left: 0,
+                    right: 0,
+                    bottom: 5,
+                    height: 20,
+                    text: args.data.status?.toUpperCase(),
+                    style: `text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 1px; background-color: rgba(255,255,255,0.2);display: flex; align-items: center; justify-content: center;`
+                },
                 {
                     right: 5,
                     top: 8,
                     width: 18,
                     height: 18,
-                    text: "X",
-                    style: "cursor:pointer; background-color: rgba(0,0,0,0.2); border-radius: 50%; text-align: center; line-height: 18px;",
+                    html: '<i class="fa-regular fa-trash-can"></i>',
+                    style: "cursor:pointer;font-size:20px; background-color: rgba(0,0,0,0.2); border-radius: 50%; text-align: center; line-height: 18px;",
                     onClick: (argsArea) => {
                         argsArea.originalEvent.stopPropagation();
                         onEliminarCita(argsArea.source.id());
@@ -164,102 +173,55 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                     top: 8,
                     width: 18,
                     height: 18,
-                    text: "✎",
-                    style: "cursor:pointer; background-color: rgba(0,0,0,0.2); border-radius: 50%; text-align: center; line-height: 18px;",
+                    html: '<i class="fa-solid fa-pen-to-square"></i>',
+                    style: "cursor:pointer; font-size:18px; background-color: rgba(0,0,0,0.2); border-radius: 50%; text-align: center; line-height: 20px;",
                     onClick: async (argsArea) => {
                         argsArea.originalEvent.stopPropagation();
                         const citaActual = argsArea.source.data;
 
                         const nombreActual = citaActual.text?.split(" - ")[0] || "";
                         const motivoActual = citaActual.text?.split(" - ")[1] || "";
-
                         const modalNombre = await DayPilot.Modal.prompt("Editar nombre:", nombreActual);
                         if (modalNombre.canceled || !modalNombre.result) return;
-
                         const modalMotivo = await DayPilot.Modal.prompt("Editar motivo:", motivoActual);
                         if (modalMotivo.canceled || !modalMotivo.result) return;
+                        console.log(citaActual)
 
                         onActualizarCita(citaActual.id, {
+                            date: new Date(citaActual.start).toISOString(),
+                            ...citaActual,
                             nombre: modalNombre.result,
-                            motivo: modalMotivo.result,
                             reason: modalMotivo.result,
-                            start: citaActual.start.toString(),
-                            end: citaActual.end.toString(),
-                            status: "pendiente",
-                            date: new Date(citaActual.start).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }),
+                            status: citaActual.status,
+
                         });
                     }
                 }
             ];
         }
     };
-
-
-
     return (
         <div className="mt-3 border rounded shadow-sm overflow-hidden">
             <DayPilotCalendar {...config} controlRef={setCalendar} />
             {mostratModal && (
-                <ModalCitas
-                    paciente={seleccionarCita}
+                <ModalCitas cita={seleccionarCita}
                     onClose={() => setMostrarModal(false)}
+                    onActualizarCita={onActualizarCita}
+                    pacientesHoy={pacientesHoy}
                 />
             )}
 
             {showModal && (
-                <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    background: "rgba(0,0,0,0.5)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 9999
-                }}>
-                    <div style={{
-                        background: "white",
-                        padding: "20px",
-                        borderRadius: "10px",
-                        minWidth: "320px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "10px"
-                    }}>
+                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }}>
+                    <div style={{ background: "white", padding: "20px", borderRadius: "10px", minWidth: "320px", display: "flex", flexDirection: "column", gap: "10px" }}>
                         <h3>Nueva cita</h3>
 
-                        <input
-                            type="text"
-                            placeholder="Nombre"
-                            value={formData.nombre}
-                            onChange={(e) =>
-                                setFormData({ ...formData, nombre: e.target.value })
-                            }
-                        />
-
-                        <input
-                            type="tel"
-                            placeholder="Teléfono"
-                            value={formData.telefono}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    telefono: e.target.value.replace(/\D/g, "").slice(0, 9)
-                                })
-                            }
-                        />
+                        <input type="text" placeholder="Nombre" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} />
+                        <input type="tel" placeholder="Teléfono" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })} />
 
                         <select
                             value={formData.motivo}
-                            onChange={(e) =>
-                                setFormData({ ...formData, motivo: e.target.value })
-                            }
-                        >
+                            onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}>
                             <option value="">Selecciona un motivo</option>
                             <option value="Pediatra">Pediatra</option>
                             <option value="Revisión">Revisión</option>
@@ -270,22 +232,10 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                         </select>
 
                         {formData.motivo === "Otro" && (
-                            <input
-                                type="text"
-                                placeholder="Escribe el motivo"
-                                value={formData.otroMotivo}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, otroMotivo: e.target.value })
-                                }
-                            />
+                            <input type="text" placeholder="Escribe el motivo" value={formData.otroMotivo} onChange={(e) => setFormData({ ...formData, otroMotivo: e.target.value })} />
                         )}
 
-                        <div style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "flex-end",
-                            marginTop: "10px"
-                        }}>
+                        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
                             <button onClick={handleGuardarCita}>Guardar</button>
                             <button onClick={() => {
                                 setShowModal(false);
