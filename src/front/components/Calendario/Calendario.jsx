@@ -10,7 +10,7 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
     const [mensajesWeb, setMensajesWeb] = useState([]);
     const [solicitarNuevaCita, setSolicitarNuevaCita] = useState(false);
     const [citas, setCitas] = useState([]);
-    
+    const [datosParaCita, setDatosParaCita] = useState(null);
 
     const cargarMensajes = async () => {
         const token = localStorage.getItem("token");
@@ -64,14 +64,14 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
         }
     };
 
-     useEffect(() => {     
+    useEffect(() => {
         cargarCitasServidor();
         cargarMensajes();
-       
+
         const timer = setInterval(() => {
-            cargarMensajes();            
-        }, 30000); 
-        
+            cargarMensajes();
+        }, 30000);
+
         return () => clearInterval(timer);
     }, []);
 
@@ -88,6 +88,28 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
 
         setCitas(prevCitas => prevCitas.filter(cita => (cita.id || cita.appointment_id) !== idCita));
     };
+
+    const eliminarMensaje = async (idMensaje) => {
+    const token = localStorage.getItem("token");
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/messages/${idMensaje}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (response.ok) {           
+            setMensajesWeb(prevMensajes => prevMensajes.filter(msg => msg.id !== idMensaje));
+            console.log("Mensaje eliminado con éxito");
+        } else {
+            console.error("Error al eliminar el mensaje del servidor");
+        }
+    } catch (error) {
+        console.error("Error en la petición DELETE:", error);
+    }
+};
 
     return (
         <div className="mt-2">
@@ -176,22 +198,21 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
                                                             <button
                                                                 className="btn btn-sm text-white fw-bold shadow-sm"
                                                                 style={{ backgroundColor: "#93bbbf", borderRadius: "8px" }}
-                                                                onClick={() => {                                                                    
-                                                                    setFormData(prev => ({
-                                                                        ...prev,
+                                                                onClick={() => {                                                                   
+                                                                    setDatosParaCita({
                                                                         nombre: msg.full_name,
+                                                                        dni: msg.dni,
                                                                         telefono: msg.phone,
                                                                         motivo: msg.reason,
-                                                                        message_id: msg.id,
-                                                                        patient_id: null
-                                                                    }));
+                                                                        message_id: msg.id
+                                                                    });
                                                                     
                                                                     setSolicitarNuevaCita(true);
                                                                     
                                                                     const modalElement = document.getElementById('modalMensajesWeb');
                                                                     const modalInstance = bootstrap.Modal.getInstance(modalElement);
                                                                     if (modalInstance) modalInstance.hide();
-                                                                  
+                                                                    
                                                                     setTimeout(() => {
                                                                         if (window.confirm(`¿Deseas eliminar la solicitud de ${msg.full_name} de esta lista?`)) {
                                                                             eliminarMensaje(msg.id);

@@ -83,6 +83,12 @@ export default function storeReducer(store, action = {}) {
         pacienteActual: action.payload,
       };
 
+    case "set_paciente_actual": 
+      return {
+        ...store,
+        pacienteActual: action.payload,
+      };
+
     case "select_patient":
       return {
         ...store,

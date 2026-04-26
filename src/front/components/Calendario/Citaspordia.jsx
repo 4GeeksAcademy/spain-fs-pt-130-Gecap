@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import { DayPilot, DayPilotCalendar } from "@daypilot/daypilot-lite-react";
 import useStore from "../../hooks/useGlobalReducer";
+import { useNavigate } from "react-router-dom";
 
 
-const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacientesHoy, onActualizarCita, abrirModalForzado, onModalAbierto }) => {
-
+const CitasPorDia = ({
+    fechaSeleccionada, onAgregarCita, onEliminarCita, pacientesHoy,
+    onActualizarCita, abrirModalForzado, onModalAbierto, datosExternos
+}) => {
+    const navigate = useNavigate();
     const [calendar, setCalendar] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
@@ -72,6 +76,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
 
             setFormData({
                 nombre: "",
+                dni: "",
                 telefono: "",
                 motivo: "",
                 otroMotivo: "",
@@ -84,7 +89,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
 
             if (onModalAbierto) onModalAbierto();
         }
-    }, [abrirModalForzado, fechaSeleccionada]);
+    }, [abrirModalForzado, datosExternos, fechaSeleccionada]);
 
     const manejarBusqueda = (texto) => {
         setFormData({ ...formData, nombre: texto });
@@ -109,6 +114,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
             patient_id: formData.patient_id,
             message_id: formData.message_id,
             nombre: formData.nombre,
+            dni: formData.dni || "12345678Z",
             telefono: formData.telefono,
             fecha: formData.fecha || selectedRange.start.toString("yyyy-MM-dd"),
             hora: formData.hora || selectedRange.start.toString("HH:mm"),
@@ -140,6 +146,11 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
 
                 alert("Cita guardada correctamente");
             }
+            else {
+                const errorData = await response.json();
+                console.error("Error 400 detallado:", errorData);
+                alert("Error al guardar: " + (errorData.msg || "Datos incompletos"));
+            }
         } catch (error) {
             console.error("Error:", error);
         }
@@ -148,15 +159,21 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
     const config = {
         viewType: "Day",
         locale: "es-es",
-        timeFormat: "Clock24Hours",        
+        timeFormat: "Clock24Hours",
         heightSpec: "BusinessHours",
         businessBeginsHour: 8,
         businessEndsHour: 21,
-        showNonBusiness: false,         
+        showNonBusiness: false,
         dayBeginsHour: 8,
         dayEndsHour: 21,
         heightSpec: "BusinessHoursNoScroll",
         cellDuration: 30,
+
+        onEventClick: (args) => {
+            const citaId = args.e.id();            
+            navigate(`/ficha-paciente/${citaId}`);
+        },
+
         onTimeRangeSelected: (args) => {
             setSelectedRange({ start: args.start, end: args.end });
             setFormData(prev => ({
@@ -166,14 +183,25 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
             }));
             setShowModal(true);
         },
-        onBeforeEventRender: args => {
+       onBeforeEventRender: args => {            
+            args.data.cursor = "pointer";            
             args.data.areas = [{
                 right: 5, top: 8, width: 18, height: 18, text: "X",
                 style: "cursor:pointer; background:rgba(0,0,0,0.2); border-radius:50%; color:white; text-align:center;",
-                onClick: (e) => onEliminarCita(e.source.id())
+                onClick: (e) => {
+                    e.preventDefault(); 
+                    onEliminarCita(e.source.id());
+                }
             }];
         }
     };
+
+    const formularioValido =
+        formData.nombre?.trim() !== "" &&
+        formData.telefono?.trim().length >= 9 &&
+        formData.fecha !== "" &&
+        formData.hora !== "" &&
+        formData.motivo !== "";
 
     return (
         <div className="mt-3 border rounded shadow-sm overflow-hidden">
@@ -193,9 +221,9 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                             <h4 className="fw-bold mb-0" style={{ color: "#566873" }}>Agendar Cita</h4>
                             <button className="btn-close" onClick={() => setShowModal(false)}></button>
                         </div>
-                      
+
                         <div className="mb-1 position-relative">
-                            <label className="form-label small fw-bold text-muted">PACIENTE</label>                            
+                            <label className="form-label small fw-bold text-muted">PACIENTE</label>
                             <select
                                 className="form-select bg-light border-0 py-2 mb-2"
                                 style={{ borderRadius: "10px", fontSize: "0.9rem" }}
@@ -240,7 +268,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                                 }}
                                 autoComplete="off"
                             />
-                           
+
                             {sugerencias.length > 0 && (
                                 <ul className="list-group position-absolute w-100 shadow-lg" style={{ zIndex: 1000, top: "100%", borderRadius: "10px" }}>
                                     {sugerencias.map(p => (
@@ -265,7 +293,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                                 </ul>
                             )}
                         </div>
-                       
+
                         <div className="mb-1">
                             <label className="form-label small fw-bold text-muted">FECHA DE LA CITA</label>
                             <input
@@ -276,7 +304,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                                 onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
                             />
                         </div>
-                        
+
                         <div className="row">
                             <div className="col-md-7">
                                 <label className="form-label small fw-bold text-muted">TELÉFONO</label>
@@ -300,7 +328,7 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                                 />
                             </div>
                         </div>
-                       
+
                         <div className="mb-1">
                             <label className="form-label small fw-bold text-muted">MOTIVO DE CONSULTA</label>
                             <select
@@ -329,14 +357,22 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                                 onChange={(e) => setFormData({ ...formData, otroMotivo: e.target.value })}
                             />
                         )}
-                       
+
                         <div className="d-flex gap-2 mt-3">
                             <button
                                 className="btn w-100 fw-bold text-white py-2 shadow-sm"
-                                style={{ backgroundColor: "#93bbbf", borderRadius: "12px" }}
+                                style={{
+                                    backgroundColor: formularioValido ? "#28a745" : "#93bbbf", // Cambia a verde si es válido
+                                    borderRadius: "12px",
+                                    transition: "background-color 0.4s ease" // Para que el cambio de color sea suave
+                                }}
                                 onClick={handleGuardarCita}
                             >
-                                Guardar Cita
+                                {formularioValido ? (
+                                    <><i className="fas fa-check-circle me-2"></i>Listo para Guardar</>
+                                ) : (
+                                    "Guardar Cita"
+                                )}
                             </button>
                             <button
                                 className="btn w-100 fw-bold btn-light py-2"

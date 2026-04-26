@@ -195,6 +195,18 @@ def create_patient():
         db.session.rollback()
         return jsonify({"msg": "Error al crear", "error": str(e)}), 500
 
+@api.route('/appointment/<int:id>', methods=['GET'])
+@jwt_required()
+def get_appointment_detail(id):
+    appointment = Appointment.query.get(id)
+    if not appointment:
+        return jsonify({"msg": "Cita no encontrada"}), 404
+        
+    return jsonify({
+        "id": appointment.id,
+        "paciente": appointment.patient.serialize() if appointment.patient else None
+    }), 200
+
 @api.route('/pacientes/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_patient(id):
@@ -257,7 +269,7 @@ def create_appointment():
             nuevo_paciente = Patient(
                 nombre=nombre,
                 telefono=data.get("telefono"),
-                dni=dni
+                dni=dni if dni else f"TEMP-{data.get('telefono')}"
             )
             db.session.add(nuevo_paciente)
             db.session.commit()
@@ -396,3 +408,18 @@ def update_profile():
     except Exception as e:
         db.session.rollback()
         return jsonify({"msg": "Error", "error": str(e)}), 500
+    
+@api.route('/messages/<int:msg_id>', methods=['DELETE'])
+@jwt_required()
+def delete_message(msg_id):   
+    mensaje = Message.query.get(msg_id)
+    if not mensaje:
+        return jsonify({"msg": "Mensaje no encontrado"}), 404
+    
+    try:
+        db.session.delete(mensaje)
+        db.session.commit()
+        return jsonify({"msg": "Mensaje eliminado correctamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": "Error al eliminar", "error": str(e)}), 500
