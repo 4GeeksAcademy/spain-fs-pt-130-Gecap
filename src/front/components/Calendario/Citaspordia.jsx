@@ -11,6 +11,15 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
     const [mostratModal, setMostrarModal] = useState(false);
     const [seleccionarCita, setSeleccionarCita] = useState(null);
 
+    const datosParaActualizar= (args) => {
+    const citaActual = args.e.data;
+    onActualizarCita(args.e.id(), {
+        ...citaActual,
+        start: args.newStart.toString(),
+        end: args.newEnd.toString(),
+        date: args.newStart.toString().split("T")[0] 
+    });
+};
 
 
     const [formData, setFormData] = useState({
@@ -106,20 +115,15 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
         headerDateFormat: "dd/MM/yyyy",
         columns: seleccionarVista === "Day" ? [{ name: "Agenda Médica", id: "C1" }] : undefined,
         timeRangeSelectedHandling: "Enabled",
-        eventResizeHandling: "Update", 
+        eventResizeHandling: "Update",
         eventMoveHandling: "Update",
         headerHeight: 50,
         cellHeight: 40,
         theme: "calendar_default",
         durationBarVisible: false,
-        onEventResized: (args) => {
-        onActualizarCita(args.e.id(), {
-            ...args.e.data,
-            start: args.newStart,
-            end: args.newEnd,
-            date: args.newStart.toString() 
-        });
-    },
+
+        onEventMoved: (args) => datosParaActualizar(args),
+        onEventResized: (args) => datosParaActualizar(args),
         onEventClick: async (args) => {
             const e = args.e;
             args.originalEvent.stopPropagation();
@@ -137,29 +141,21 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                 calendar.clearSelection();
             }
         },
-        onBeforeEventRender: args => {               
+        onBeforeEventRender: args => {
             if (!args.data.backColor) {
                 args.data.backColor = "#93bbbf";
             }
             args.data.borderColor = "darker";
             args.data.fontColor = "white";
-            args.data.areas = [                
-              {
-            left: 0,
-            right: 0,
-            bottom: 5,
-            height: 20,
-            text: args.data.status?.toUpperCase(),
-            style: `
-                text-align: center; 
-                font-size: 10px; 
-                font-weight: bold; 
-                letter-spacing: 1px;
-                background-color: rgba(255,255,255,0.2);
-                display: flex; 
-                align-items: center; 
-                justify-content: center;`
-        },
+            args.data.areas = [
+                {
+                    left: 0,
+                    right: 0,
+                    bottom: 5,
+                    height: 20,
+                    text: args.data.status?.toUpperCase(),
+                    style: `text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 1px; background-color: rgba(255,255,255,0.2);display: flex; align-items: center; justify-content: center;`
+                },
                 {
                     right: 5,
                     top: 8,
@@ -185,7 +181,6 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
 
                         const nombreActual = citaActual.text?.split(" - ")[0] || "";
                         const motivoActual = citaActual.text?.split(" - ")[1] || "";
-
                         const modalNombre = await DayPilot.Modal.prompt("Editar nombre:", nombreActual);
                         if (modalNombre.canceled || !modalNombre.result) return;
                         const modalMotivo = await DayPilot.Modal.prompt("Editar motivo:", motivoActual);
@@ -217,56 +212,16 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
             )}
 
             {showModal && (
-                <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    background: "rgba(0,0,0,0.5)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 9999
-                }}>
-                    <div style={{
-                        background: "white",
-                        padding: "20px",
-                        borderRadius: "10px",
-                        minWidth: "320px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "10px"
-                    }}>
+                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }}>
+                    <div style={{ background: "white", padding: "20px", borderRadius: "10px", minWidth: "320px", display: "flex", flexDirection: "column", gap: "10px" }}>
                         <h3>Nueva cita</h3>
 
-                        <input
-                            type="text"
-                            placeholder="Nombre"
-                            value={formData.nombre}
-                            onChange={(e) =>
-                                setFormData({ ...formData, nombre: e.target.value })
-                            }
-                        />
-
-                        <input
-                            type="tel"
-                            placeholder="Teléfono"
-                            value={formData.telefono}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    telefono: e.target.value.replace(/\D/g, "").slice(0, 9)
-                                })
-                            }
-                        />
+                        <input type="text" placeholder="Nombre" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} />
+                        <input type="tel" placeholder="Teléfono" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })} />
 
                         <select
                             value={formData.motivo}
-                            onChange={(e) =>
-                                setFormData({ ...formData, motivo: e.target.value })
-                            }
-                        >
+                            onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}>
                             <option value="">Selecciona un motivo</option>
                             <option value="Pediatra">Pediatra</option>
                             <option value="Revisión">Revisión</option>
@@ -277,22 +232,10 @@ const CitasPorDia = ({ fechaSeleccionada, onAgregarCita, onEliminarCita, pacient
                         </select>
 
                         {formData.motivo === "Otro" && (
-                            <input
-                                type="text"
-                                placeholder="Escribe el motivo"
-                                value={formData.otroMotivo}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, otroMotivo: e.target.value })
-                                }
-                            />
+                            <input type="text" placeholder="Escribe el motivo" value={formData.otroMotivo} onChange={(e) => setFormData({ ...formData, otroMotivo: e.target.value })} />
                         )}
 
-                        <div style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "flex-end",
-                            marginTop: "10px"
-                        }}>
+                        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
                             <button onClick={handleGuardarCita}>Guardar</button>
                             <button onClick={() => {
                                 setShowModal(false);

@@ -103,7 +103,9 @@ function ModalCitas({ cita, onClose, onActualizarCita, pacientesHoy }) {
             <div className="modal show modal-xl bg-dark bg-opacity-75 d-block" tabIndex="-1" role="dialog">
                 <div className="modal-dialog" role="document">
                     <div className="modal-content">
-                        <button type="button" className="btn-close d-flex justify-content-between" aria-label="Close" onClick={onClose}></button>
+                        <div className='d-flex justify-content-end m-2'>
+                        <button type="button" className="btn-close" aria-label="Close" onClick={onClose}></button>
+                        </div>
                             <div className="m-4">
                                 {citasContadas > 0 ? (
                                     <div className={`p-2 rounded-3 ${altoRiesgo ? 'bg-danger-subtle border border-danger' : 'bg-success-subtle border border-success'}`}>
