@@ -92,7 +92,7 @@ function Calendario({ onAgregarCita, onEliminarCita, pacienteHoy, onActualizarCi
                         outsideClickIgnoreClass="react-datepicker__day--outside-month"
                     />
                     <button
-                        className="btn fw-bold shadow-sm w-100"
+                        className="btn fw-bold shadow-sm w-100 mb-2"
                         style={{ backgroundColor: "#93bbbf", color: "white", letterSpacing: "0.7px" }}
                         onClick={() => setAbrirModalBoton(true)}
                     >
